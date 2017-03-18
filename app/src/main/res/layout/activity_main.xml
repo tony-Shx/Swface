@@ -12,7 +12,39 @@
     tools:context="com.henu.swface.MainActivity">
 
     <TextView
-        android:layout_width="wrap_content"
+        android:id="@+id/txt_title"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Hello World!"/>
+        android:layout_marginBottom="5dp"
+        android:gravity="center_horizontal"
+        android:layout_alignParentTop="true"
+        android:text="@string/main_txt_title"
+        android:textSize="28sp" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_below="@id/txt_title"
+        android:layout_marginTop="10dp">
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/button_register"
+            android:text="@string/button_register"
+            />
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/button_sign_in"
+            android:text="@string/button_sign_in"
+            />
+
+
+
+
+
+
+    </LinearLayout>
+
+
 </RelativeLayout>

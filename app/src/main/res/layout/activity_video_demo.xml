@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+    
+	<SurfaceView 
+	    android:id="@+id/sfv_preview"
+	    android:layout_width="match_parent"
+	    android:layout_height="match_parent"/>
+	
+	<SurfaceView 
+	    android:id="@+id/sfv_face"
+	    android:layout_width="match_parent"
+	    android:layout_height="match_parent"/>
+	
+	
+    
+    <RadioGroup 
+        android:id="@+id/align_mode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal"
+        android:weightSum="2"
+        >
+        <RadioButton 
+            android:id="@+id/detect"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:checked="true"
+            android:text="检测"
+            />
+        <RadioButton 
+            android:id="@+id/align"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="聚焦"
+            />
+    </RadioGroup>
+	
+</RelativeLayout>

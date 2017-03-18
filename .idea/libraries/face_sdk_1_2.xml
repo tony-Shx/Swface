@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="face_sdk-1.2">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/app/libs/face_sdk-1.2.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

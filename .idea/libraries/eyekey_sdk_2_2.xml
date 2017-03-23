@@ -1,7 +1,7 @@
 <component name="libraryTable">
-  <library name="joda-time-2.9.6">
+  <library name="eyekey-sdk_2.2">
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/app/libs/joda-time-2.9.6.jar!/" />
+      <root url="jar://$PROJECT_DIR$/app/libs/eyekey-sdk_2.2.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

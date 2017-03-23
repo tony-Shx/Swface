@@ -1,7 +1,7 @@
 <component name="libraryTable">
-  <library name="commons-codec-1.10">
+  <library name="converter-gson-2.1.0">
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/app/libs/commons-codec-1.10.jar!/" />
+      <root url="jar://$PROJECT_DIR$/app/libs/converter-gson-2.1.0.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

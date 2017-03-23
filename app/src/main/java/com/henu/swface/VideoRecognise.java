@@ -5,6 +5,8 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
@@ -17,6 +19,7 @@ import android.hardware.Camera.PreviewCallback;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Process;
+import android.support.v7.app.AlertDialog;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -27,28 +30,42 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.RadioGroup;
 import android.widget.RadioGroup.OnCheckedChangeListener;
 import android.widget.RelativeLayout;
 import android.widget.RelativeLayout.LayoutParams;
 import android.widget.Toast;
-
 import com.henu.swface.util.FaceRect;
 import com.henu.swface.util.FaceUtil;
 import com.henu.swface.util.ParseResult;
 import com.iflytek.cloud.FaceDetector;
 import com.iflytek.cloud.SpeechUtility;
 import com.iflytek.cloud.util.Accelerometer;
+import com.megvii.cloud.http.CommonOperate;
+import com.megvii.cloud.http.Response;
 
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+
 
 /**
  * 离线视频流检测
  */
-public class VideoDemo extends Activity {
-	private final static String TAG = VideoDemo.class.getSimpleName();
+public class VideoRecognise extends Activity {
+
+	private final static String API_KEY = "lJsij4n8pYEj3bW-tSJqEhRgkdfHobC8";
+	private final static String API_Secret = "i1H3kRBBzJ2Wo_1T-6RsbRmWgcHAREww";
+
+	private final static String TAG = VideoRecognise.class.getSimpleName();
 	private SurfaceView mPreviewSurface;
 	private SurfaceView mFaceSurface;
 	private Camera mCamera;
@@ -56,6 +73,8 @@ public class VideoDemo extends Activity {
 	// Camera nv21格式预览帧的尺寸，默认设置640*480
 	private int PREVIEW_WIDTH = 640;
 	private int PREVIEW_HEIGHT = 480;
+	private int STORAGE_WIDTH = 900;
+	private int STORAGE_HEIGHT = 1200;
 	// 预览帧数据存储数组和缓存数组
 	private byte[] nv21;
 	private byte[] buffer;
@@ -79,8 +98,8 @@ public class VideoDemo extends Activity {
 		initUI();
 		nv21 = new byte[PREVIEW_WIDTH * PREVIEW_HEIGHT * 2];
 		buffer = new byte[PREVIEW_WIDTH * PREVIEW_HEIGHT * 2];
-		mAcc = new Accelerometer(VideoDemo.this);
-		mFaceDetector = FaceDetector.createDetector(VideoDemo.this, null);
+		mAcc = new Accelerometer(VideoRecognise.this);
+		mFaceDetector = FaceDetector.createDetector(VideoRecognise.this, null);
 	}
 
 
@@ -189,7 +208,7 @@ public class VideoDemo extends Activity {
 		});
 
 		setSurfaceSize();
-		mToast = Toast.makeText(VideoDemo.this, "", Toast.LENGTH_SHORT);
+		mToast = Toast.makeText(VideoRecognise.this, "", Toast.LENGTH_SHORT);
 
 		button_take_photos.setOnClickListener(new OnClickListener() {
 			@Override
@@ -203,7 +222,12 @@ public class VideoDemo extends Activity {
 							fos = new FileOutputStream(
 									new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) +
 											"/" + filename));
-							fos.write(data);
+							//压缩图片大小为尺寸1200*900，便于传输存储
+							Bitmap bitmap_source = BitmapFactory.decodeByteArray(data, 0, data.length);
+							BufferedOutputStream bos = new BufferedOutputStream(fos);
+							Bitmap mBitmap = Bitmap.createScaledBitmap(bitmap_source, STORAGE_HEIGHT, STORAGE_WIDTH, true);
+							mBitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
+							//fos.write(data);
 							fos.flush();
 							fos.close();
 							System.out.println("图片保存成功");
@@ -232,19 +256,69 @@ public class VideoDemo extends Activity {
 					"/waitForRename.jpg");
 			if (file.exists()) {
 				String username = data.getStringExtra("username");
-				File newfile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-						+ "/" + username + ".jpg");
-				file.renameTo(newfile);
+				File newFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+						+ "/" + username + "_1.jpg");
+				file.renameTo(newFile);
 				System.out.println("图片重命名成功");
 			} else {
 				Toast.makeText(this, "拍照保存失败，错误代码-1", Toast.LENGTH_LONG);
 			}
-			mCamera.startPreview();//保存之后返回预览界面
-			finish();
+			//mCamera.startPreview();//保存之后返回预览界面
+			AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+			dialog.setCancelable(false);
+			dialog.setTitle("温馨提示：");
+			dialog.setMessage("正在注册新人脸，请保持网络通畅。");
+			dialog.setView(new ProgressBar(this));
+			dialog.show();
+			RegisterFace(dialog,file);
 		} else {
-			mCamera.startPreview();//保存之后返回预览界面
+			//mCamera.startPreview();//保存之后返回预览界面
+			Toast.makeText(this, "拍照保存失败，错误代码-1", Toast.LENGTH_LONG);
 		}
 	}
+
+
+	private void RegisterFace(AlertDialog.Builder dialog, final File imageFile) {
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				CommonOperate commonOperate = new CommonOperate(API_KEY,API_Secret,false);
+				// 参数为本地图片文件二进制数组
+				byte[] image = getBytes(imageFile);   // readImageFile函数仅为示例
+				Response response = null;
+				try {
+					response = commonOperate.detectByte(image,1,"gender,age,smiling,glass,headpose,facequality,blur");
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+
+			}
+		}).start();
+	}
+
+	/**
+	 * 获得指定文件的byte数组
+	 */
+
+	private byte[] getBytes(File file){
+		byte[] buffer = null;
+		try {
+			FileInputStream fis = new FileInputStream(file);
+			ByteArrayOutputStream bos = new ByteArrayOutputStream(1000);
+			byte[] b = new byte[1000];
+			int n;
+			while ((n = fis.read(b)) != -1) {
+				bos.write(b, 0, n);
+			}
+			fis.close();
+			bos.close();
+			buffer = bos.toByteArray();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return buffer;
+	}
+
 
 	private void openCamera() {
 		if (null != mCamera) {

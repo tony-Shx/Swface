@@ -33,7 +33,7 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity android:name=".VideoDemo">
+        <activity android:name=".VideoRecognise">
         </activity>
         <activity android:name=".DialogInputNameActivity" android:theme="@android:style/Theme.Dialog">
         </activity>

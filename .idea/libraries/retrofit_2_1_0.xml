@@ -1,7 +1,7 @@
 <component name="libraryTable">
-  <library name="Sunflower">
+  <library name="retrofit-2.1.0">
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/app/libs/Sunflower.jar!/" />
+      <root url="jar://$PROJECT_DIR$/app/libs/retrofit-2.1.0.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

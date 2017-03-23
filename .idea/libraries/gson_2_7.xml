@@ -1,7 +1,7 @@
 <component name="libraryTable">
-  <library name="face_sdk-1.2">
+  <library name="gson-2.7">
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/app/libs/face_sdk-1.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/app/libs/gson-2.7.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

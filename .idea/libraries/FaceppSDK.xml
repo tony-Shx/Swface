@@ -1,7 +1,7 @@
 <component name="libraryTable">
-  <library name="httpclient-4.5.2">
+  <library name="FaceppSDK">
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/app/libs/httpclient-4.5.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/app/libs/FaceppSDK.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

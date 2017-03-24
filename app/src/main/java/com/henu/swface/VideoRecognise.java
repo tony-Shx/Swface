@@ -19,6 +19,7 @@ import android.hardware.Camera.PreviewCallback;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Process;
+import android.renderscript.Sampler;
 import android.support.v7.app.AlertDialog;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -38,6 +39,7 @@ import android.widget.RelativeLayout.LayoutParams;
 import android.widget.Toast;
 import com.henu.swface.util.FaceRect;
 import com.henu.swface.util.FaceUtil;
+import com.henu.swface.util.JSONUtil;
 import com.henu.swface.util.ParseResult;
 import com.iflytek.cloud.FaceDetector;
 import com.iflytek.cloud.SpeechUtility;
@@ -52,9 +54,19 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.StringReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import okhttp3.FormBody;
+import okhttp3.Headers;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okio.BufferedSink;
 
 
 /**
@@ -225,7 +237,13 @@ public class VideoRecognise extends Activity {
 							//压缩图片大小为尺寸1200*900，便于传输存储
 							Bitmap bitmap_source = BitmapFactory.decodeByteArray(data, 0, data.length);
 							BufferedOutputStream bos = new BufferedOutputStream(fos);
-							Bitmap mBitmap = Bitmap.createScaledBitmap(bitmap_source, STORAGE_HEIGHT, STORAGE_WIDTH, true);
+							// 根据旋转角度，生成旋转矩阵
+							Matrix matrix = new Matrix();
+							matrix.postRotate(270);
+							//旋转图片
+							Bitmap mBitmap1 = Bitmap.createBitmap(bitmap_source,0,0, bitmap_source.getWidth(), bitmap_source.getHeight(),matrix,true);
+							//裁剪图片
+							Bitmap mBitmap =mBitmap1.createScaledBitmap(mBitmap1,STORAGE_WIDTH,STORAGE_HEIGHT,false);
 							mBitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
 							//fos.write(data);
 							fos.flush();
@@ -254,26 +272,26 @@ public class VideoRecognise extends Activity {
 		if (resultCode == 1) {
 			File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) +
 					"/waitForRename.jpg");
+			AlertDialog.Builder dialog = null;
 			if (file.exists()) {
 				String username = data.getStringExtra("username");
 				File newFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
 						+ "/" + username + "_1.jpg");
 				file.renameTo(newFile);
-				System.out.println("图片重命名成功");
+				dialog = new AlertDialog.Builder(this);
+				RegisterFace(dialog,newFile);
+				dialog.setCancelable(false);
+				dialog.setTitle("温馨提示：");
+				dialog.setMessage("正在注册新人脸，请保持网络通畅。");
+				dialog.setView(new ProgressBar(this));
+				dialog.show();
 			} else {
 				Toast.makeText(this, "拍照保存失败，错误代码-1", Toast.LENGTH_LONG);
 			}
 			//mCamera.startPreview();//保存之后返回预览界面
-			AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-			dialog.setCancelable(false);
-			dialog.setTitle("温馨提示：");
-			dialog.setMessage("正在注册新人脸，请保持网络通畅。");
-			dialog.setView(new ProgressBar(this));
-			dialog.show();
-			RegisterFace(dialog,file);
 		} else {
 			//mCamera.startPreview();//保存之后返回预览界面
-			Toast.makeText(this, "拍照保存失败，错误代码-1", Toast.LENGTH_LONG);
+			Toast.makeText(this, "拍照保存失败，错误代码-2", Toast.LENGTH_LONG);
 		}
 	}
 
@@ -282,43 +300,48 @@ public class VideoRecognise extends Activity {
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
-				CommonOperate commonOperate = new CommonOperate(API_KEY,API_Secret,false);
+				//CommonOperate commonOperate = new CommonOperate(API_KEY,API_Secret,false);
 				// 参数为本地图片文件二进制数组
-				byte[] image = getBytes(imageFile);   // readImageFile函数仅为示例
-				Response response = null;
+				//byte[] image = getBytes(imageFile);   // readImageFile函数仅为示例
+				OkHttpClient client = new OkHttpClient();
+				RequestBody requestBody = postBody(imageFile);
+				Request request = new Request.Builder().url("https://api-cn.faceplusplus.com/facepp/v3/detect")
+						.post(requestBody).build();
 				try {
-					response = commonOperate.detectByte(image,1,"gender,age,smiling,glass,headpose,facequality,blur");
-				} catch (Exception e) {
+					okhttp3.Response response = client.newCall(request).execute();
+					//System.out.println("!!!!!!!!!"+response.body().string());
+					String JSON = response.body().string();
+					JSONUtil jsonUtil = new JSONUtil();
+					jsonUtil.parseFaceJSON(JSON);
+				} catch (IOException e) {
 					e.printStackTrace();
 				}
-
 			}
 		}).start();
 	}
 
-	/**
-	 * 获得指定文件的byte数组
-	 */
 
-	private byte[] getBytes(File file){
-		byte[] buffer = null;
-		try {
-			FileInputStream fis = new FileInputStream(file);
-			ByteArrayOutputStream bos = new ByteArrayOutputStream(1000);
-			byte[] b = new byte[1000];
-			int n;
-			while ((n = fis.read(b)) != -1) {
-				bos.write(b, 0, n);
-			}
-			fis.close();
-			bos.close();
-			buffer = bos.toByteArray();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return buffer;
+
+	protected RequestBody postBody(File file) {
+		// 设置请求体
+		MediaType MEDIA_TYPE_JPG = MediaType.parse("image/jpg");
+		RequestBody body = MultipartBody.create(MEDIA_TYPE_JPG, file);
+
+		MultipartBody.Builder builder = new MultipartBody.Builder();
+		builder.setType(MultipartBody.FORM);
+		//这里是 封装上传图片参数
+//		// 封装请求参数,这里最重要
+//		HashMap<String, String> params = new HashMap<>();
+//		params.put("api_key",API_KEY);
+//		params.put("api_secret",API_Secret);
+//		//参数以添加header方式将参数封装，否则上传参数为空
+		builder.addFormDataPart("api_key",API_KEY);
+		builder.addFormDataPart("api_secret",API_Secret);
+		builder.addFormDataPart("image_file", file.getName(), body);
+		//builder.addFormDataPart("return_landmark", "1");
+		builder.addFormDataPart("return_attributes", "gender,age,smiling,headpose,facequality,blur,eyestatus,ethnicity");
+		return builder.build();
 	}
-
 
 	private void openCamera() {
 		if (null != mCamera) {

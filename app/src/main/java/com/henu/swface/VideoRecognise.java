@@ -3,6 +3,8 @@ package com.henu.swface;
 import android.Manifest.permission;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -18,9 +20,13 @@ import android.hardware.Camera.Parameters;
 import android.hardware.Camera.PreviewCallback;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
 import android.os.Process;
 import android.renderscript.Sampler;
+import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.view.menu.MenuWrapperFactory;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -37,6 +43,9 @@ import android.widget.RadioGroup.OnCheckedChangeListener;
 import android.widget.RelativeLayout;
 import android.widget.RelativeLayout.LayoutParams;
 import android.widget.Toast;
+
+import com.henu.swface.Datebase.DatebaseAdapter;
+import com.henu.swface.Datebase.Face;
 import com.henu.swface.util.FaceRect;
 import com.henu.swface.util.FaceUtil;
 import com.henu.swface.util.JSONUtil;
@@ -58,6 +67,7 @@ import java.io.StringReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.logging.LogRecord;
 
 import okhttp3.FormBody;
 import okhttp3.Headers;
@@ -76,10 +86,12 @@ public class VideoRecognise extends Activity {
 
 	private final static String API_KEY = "lJsij4n8pYEj3bW-tSJqEhRgkdfHobC8";
 	private final static String API_Secret = "i1H3kRBBzJ2Wo_1T-6RsbRmWgcHAREww";
-
+	private final static int DETECT_SUCCESS = 0X110;
+	private final static int DETECT_FAILED = 0X111;
 	private final static String TAG = VideoRecognise.class.getSimpleName();
 	private SurfaceView mPreviewSurface;
 	private SurfaceView mFaceSurface;
+	private AlertDialog.Builder dialog = null;
 	private Camera mCamera;
 	private int mCameraId = CameraInfo.CAMERA_FACING_FRONT;
 	// Camera nv21格式预览帧的尺寸，默认设置640*480
@@ -272,19 +284,18 @@ public class VideoRecognise extends Activity {
 		if (resultCode == 1) {
 			File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) +
 					"/waitForRename.jpg");
-			AlertDialog.Builder dialog = null;
 			if (file.exists()) {
 				String username = data.getStringExtra("username");
 				File newFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
 						+ "/" + username + "_1.jpg");
 				file.renameTo(newFile);
 				dialog = new AlertDialog.Builder(this);
-				RegisterFace(dialog,newFile);
 				dialog.setCancelable(false);
 				dialog.setTitle("温馨提示：");
 				dialog.setMessage("正在注册新人脸，请保持网络通畅。");
 				dialog.setView(new ProgressBar(this));
 				dialog.show();
+				RegisterFace(newFile);
 			} else {
 				Toast.makeText(this, "拍照保存失败，错误代码-1", Toast.LENGTH_LONG);
 			}
@@ -296,7 +307,46 @@ public class VideoRecognise extends Activity {
 	}
 
 
-	private void RegisterFace(AlertDialog.Builder dialog, final File imageFile) {
+	private Handler myhandler = new Handler(){
+		@Override
+		public void handleMessage(Message msg) {
+			switch (msg.arg1){
+				case DETECT_SUCCESS:
+					AlertDialog.Builder newdialog = new AlertDialog.Builder(VideoRecognise.this);
+					newdialog.setCancelable(true);
+					newdialog.setTitle("温馨提示：");
+					newdialog.setMessage("恭喜，注册成功！\n点击确定返回主界面");
+					newdialog.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+						 finish();
+						}
+					});
+					//dialog();
+					newdialog.show();
+					break;
+				case DETECT_FAILED:
+					AlertDialog.Builder newdialog1 = new AlertDialog.Builder(VideoRecognise.this);
+					newdialog1.setCancelable(true);
+					newdialog1.setTitle("温馨提示：");
+					newdialog1.setMessage("注册失败！\n请检查网络连接！！");
+					newdialog1.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							finish();
+						}
+					});
+					//dialog1.cancel();
+					newdialog1.show();
+					break;
+				default:
+					break;
+			}
+		}
+	};
+
+
+	private void RegisterFace(final File imageFile) {
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -309,11 +359,23 @@ public class VideoRecognise extends Activity {
 						.post(requestBody).build();
 				try {
 					okhttp3.Response response = client.newCall(request).execute();
-					//System.out.println("!!!!!!!!!"+response.body().string());
 					String JSON = response.body().string();
 					JSONUtil jsonUtil = new JSONUtil();
-					jsonUtil.parseFaceJSON(JSON);
+					Face face = jsonUtil.parseFaceJSON(JSON);
+					face.setImage_path(imageFile.getAbsolutePath());
+					DatebaseAdapter db = new DatebaseAdapter(getApplicationContext());
+					db.add(face);
+					ArrayList<Face> list = db.findAll();
+					for(Face face1:list){
+						System.out.println(face1.toString());
+					}
+					Message message = new Message();
+					message.arg1 = DETECT_SUCCESS;
+					myhandler.sendMessage(message);
 				} catch (IOException e) {
+					Message message = new Message();
+					message.arg1 = DETECT_FAILED;
+					myhandler.sendMessage(message);
 					e.printStackTrace();
 				}
 			}
@@ -528,3 +590,4 @@ public class VideoRecognise extends Activity {
 	}
 
 }
+

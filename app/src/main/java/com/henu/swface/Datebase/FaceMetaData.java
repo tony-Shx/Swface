@@ -44,6 +44,8 @@ public final class FaceMetaData {
         public static final String BLURNESS = "blurness";
         public static final String SMILE = "smile";
         public static final String FACEQUALITY = "facequality";
+        public static final String FACE_TOKEN = "face_token";
+        public static final String IMAGE_PATH = "image_path";
 
     }
 }

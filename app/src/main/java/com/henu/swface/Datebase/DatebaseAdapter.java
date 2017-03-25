@@ -51,6 +51,8 @@ public class DatebaseAdapter {
         values.put(FaceMetaData.FaceTable.BLURNESS, face.getBlurness());
         values.put(FaceMetaData.FaceTable.SMILE, face.getSmile());
         values.put(FaceMetaData.FaceTable.FACEQUALITY,face.getFacequality());
+        values.put(FaceMetaData.FaceTable.FACE_TOKEN,face.getFace_token());
+        values.put(FaceMetaData.FaceTable.IMAGE_PATH,face.getImage_path());
         //执行插入操作
         db.insert(FaceMetaData.FaceTable.TABLE_NAME, FaceMetaData.FaceTable.IMAGE_ID,values);
         db.close();
@@ -104,6 +106,8 @@ public class DatebaseAdapter {
             face.setBlurness(cursor.getFloat(cursor.getColumnIndex("blurness")));
             face.setSmile(cursor.getFloat(cursor.getColumnIndex("smile")));
             face.setFacequality(cursor.getFloat(cursor.getColumnIndex("facequality")));
+            face.setFace_token(cursor.getString(cursor.getColumnIndex("face_token")));
+            face.setImage_path(cursor.getString(cursor.getColumnIndex("image_path")));
         }
         return face;
     }
@@ -144,6 +148,8 @@ public class DatebaseAdapter {
             face.setBlurness(cursor.getFloat(cursor.getColumnIndex("blurness")));
             face.setSmile(cursor.getFloat(cursor.getColumnIndex("smile")));
             face.setFacequality(cursor.getFloat(cursor.getColumnIndex("facequality")));
+            face.setFace_token(cursor.getString(cursor.getColumnIndex("face_token")));
+            face.setImage_path(cursor.getString(cursor.getColumnIndex("image_path")));
             faceArrayList.add(face);
         }
         return faceArrayList;

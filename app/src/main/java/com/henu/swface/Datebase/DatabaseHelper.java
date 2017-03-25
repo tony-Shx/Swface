@@ -21,7 +21,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             "right_normal_glass_eye_open REAL,right_no_glass_eye_close REAL,right_occlusion REAL," +
             "right_no_glass_eye_open REAL,right_normal_glass_eye_close REAL,right_dark_glasses REAL," +
             "headpose_yaw_angle REAL,headpose_pitch_angle REAL,headpose_roll_angle REAL,blurness REAL," +
-            "smile REAL,facequality REAL)";
+            "smile REAL,facequality REAL,face_token TEXT,image_path TEXT)";
     private static final String DROP_TABLE_RUN = "DROP TABLE IF EXISTS faces";
     public DatabaseHelper(Context context) {
         super(context, DB_NAME, null, version);

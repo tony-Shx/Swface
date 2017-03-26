@@ -16,7 +16,7 @@ public class JSONUtil {
 	}
 
 	public Face parseFaceJSON(String JSON){
-		//System.out.println("!!!!!!!!!"+JSON);
+		System.out.println("!!!!!!!!!"+JSON);
 		Face face = new Face();
 		try {
 			JSONObject jsonObject = new JSONObject(JSON);
@@ -24,6 +24,9 @@ public class JSONUtil {
 			face.setRequest_id(jsonObject.get("request_id").toString());
 			face.setTime_used(jsonObject.getInt("time_used"));
 			JSONArray faceArray = jsonObject.getJSONArray("faces");
+			if(faceArray==null){
+				return null;
+			}
 			JSONObject faceObject = faceArray.getJSONObject(0);
 			face.setFace_rectangle_width(faceObject.getJSONObject("face_rectangle").getInt("width"));
 			face.setFace_rectangle_top(faceObject.getJSONObject("face_rectangle").getInt("top"));
@@ -56,9 +59,9 @@ public class JSONUtil {
 			face.setBlurness(attributesObject.getJSONObject("blur").getJSONObject("blurness").getDouble("value"));
 		} catch (JSONException e) {
 			e.printStackTrace();
-		}finally {
-			return face;
+			return null;
 		}
+		return face;
 	}
 
 }

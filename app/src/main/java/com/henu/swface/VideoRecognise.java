@@ -40,8 +40,9 @@ import android.widget.RelativeLayout;
 import android.widget.RelativeLayout.LayoutParams;
 import android.widget.Toast;
 
-import com.henu.swface.Datebase.DatebaseAdapter;
-import com.henu.swface.Datebase.Face;
+import com.henu.swface.Datebase.DatabaseAdapter;
+import com.henu.swface.VO.Face;
+import com.henu.swface.VO.User;
 import com.henu.swface.util.FaceRect;
 import com.henu.swface.util.FaceUtil;
 import com.henu.swface.util.JSONUtil;
@@ -261,11 +262,11 @@ public class VideoRecognise extends Activity {
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
+		String username = data.getStringExtra("username");
 		if (resultCode == 1) {
 			File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) +
 					"/waitForRename.jpg");
 			if (file.exists()) {
-				String username = data.getStringExtra("username");
 				File newFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
 						+ "/" + username + "_1.jpg");
 				final AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -288,7 +289,7 @@ public class VideoRecognise extends Activity {
 				builder.setMessage("正在注册新人脸，请保持网络通畅。");
 				builder.setView(new ProgressBar(this));
 				dialog = builder.show();
-				RegisterFace(newFile);
+				RegisterFace(newFile,username);
 			} else {
 				Toast.makeText(this, "错误代码-1，拍照文件保存失败，请检查磁盘空间！", Toast.LENGTH_LONG).show();
 			}
@@ -365,7 +366,7 @@ public class VideoRecognise extends Activity {
 	};
 
 
-	private void RegisterFace(final File imageFile) {
+	private void RegisterFace(final File imageFile, final String username) {
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -387,11 +388,20 @@ public class VideoRecognise extends Activity {
 						myhandler.sendMessage(message);
 					} else {
 						face.setImage_path(imageFile.getAbsolutePath());
-						DatebaseAdapter db = new DatebaseAdapter(getApplicationContext());
-						db.add(face);
-						ArrayList<Face> list = db.findAll();
-						for (Face face1 : list) {
-							Log.v("faceList:",face1.toString());
+						DatabaseAdapter db = new DatabaseAdapter(getApplicationContext());
+						db.addFace_Faces(face);
+						User user = new User();
+						user.setUser_name(username);
+						user.setFace_token1(face.getFace_token());
+						db.addUser_User(user);
+
+						ArrayList<Face> face_list = db.findAll_Faces();
+						ArrayList<User> user_face = db.findAllUser_User();
+						for (Face face1 : face_list) {
+							Log.v("faceList:", face1.toString());
+						}
+						for (User user1: user_face) {
+							Log.v("userList:", user1.toString());
 						}
 						Message message = new Message();
 						message.arg1 = DETECT_SUCCESS;

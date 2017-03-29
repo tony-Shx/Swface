@@ -1,4 +1,4 @@
-package com.henu.swface.Datebase;
+package com.henu.swface.VO;
 
 /**
  * Created by 宋浩祥 on 2017/3/7.

@@ -1,6 +1,6 @@
 package com.henu.swface.util;
 
-import com.henu.swface.Datebase.Face;
+import com.henu.swface.VO.Face;
 
 import org.json.JSONArray;
 import org.json.JSONException;

@@ -4,6 +4,10 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
+
+import com.henu.swface.VO.Face;
+import com.henu.swface.VO.User;
 
 import java.util.ArrayList;
 
@@ -11,14 +15,14 @@ import java.util.ArrayList;
  * Created by 宋浩祥 on 2017/3/7.
  */
 
-public class DatebaseAdapter {
+public class DatabaseAdapter {
 
     private DatabaseHelper databaseHelper;
-    public DatebaseAdapter(Context context) {
+    public DatabaseAdapter(Context context) {
         databaseHelper = new DatabaseHelper(context);
     }
 
-    public void add(Face face){
+    public void addFace_Faces(Face face){
         SQLiteDatabase db = databaseHelper.getWritableDatabase();
         //将数据按照键值对存入ContentValues
         ContentValues values = new ContentValues();
@@ -58,18 +62,18 @@ public class DatebaseAdapter {
         db.close();
         System.out.println("插入数据成功！");
     }
-    public void delete(int id){
+    public void delete_Faces(int id){
         SQLiteDatabase db = databaseHelper.getWritableDatabase();
         String[] args = {String.valueOf(id)};
         db.delete(FaceMetaData.FaceTable.TABLE_NAME,"image_id=?",args);
         db.close();
     }
 
-    public void update(Face face){
+    public void update_Faces(Face face){
 
     }
 
-    public Face findById(int id){
+    public Face findById_Faces(int id){
         SQLiteDatabase db = databaseHelper.getReadableDatabase();
         String[] selectionArgs = {String.valueOf(id)};
         Cursor cursor = db.query(FaceMetaData.FaceTable.TABLE_NAME,null,"_id=?",selectionArgs,null,null,null);
@@ -109,10 +113,11 @@ public class DatebaseAdapter {
             face.setFace_token(cursor.getString(cursor.getColumnIndex("face_token")));
             face.setImage_path(cursor.getString(cursor.getColumnIndex("image_path")));
         }
+        cursor.close();
         return face;
     }
 
-    public ArrayList<Face> findAll(){
+    public ArrayList<Face> findAll_Faces(){
         SQLiteDatabase db = databaseHelper.getReadableDatabase();
         Cursor cursor = db.query(FaceMetaData.FaceTable.TABLE_NAME,null,null,null,null,null,null);
         ArrayList<Face> faceArrayList = new ArrayList<>();
@@ -152,7 +157,51 @@ public class DatebaseAdapter {
             face.setImage_path(cursor.getString(cursor.getColumnIndex("image_path")));
             faceArrayList.add(face);
         }
+        cursor.close();
         return faceArrayList;
+    }
+
+
+    public void addUser_User(User user){
+        SQLiteDatabase db = databaseHelper.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(UserMetaData.UserTable.USER_NAME,user.getUser_name());
+        if(user.getFace_token1()!=null&&!user.getFace_token1().isEmpty()){
+            contentValues.put(UserMetaData.UserTable.FACE_TOKEN1,user.getFace_token1());
+        }
+        if(user.getFace_token2()!=null&&!user.getFace_token2().isEmpty()){
+            contentValues.put(UserMetaData.UserTable.FACE_TOKEN2,user.getFace_token2());
+        }
+        if(user.getFace_token3()!=null&&!user.getFace_token3().isEmpty()){
+            contentValues.put(UserMetaData.UserTable.FACE_TOKEN3,user.getFace_token3());
+        }
+        if(user.getFace_token4()!=null&&!user.getFace_token4().isEmpty()){
+            contentValues.put(UserMetaData.UserTable.FACE_TOKEN4,user.getFace_token4());
+        }
+        if(user.getFace_token5()!=null&&!user.getFace_token5().isEmpty()){
+            contentValues.put(UserMetaData.UserTable.FACE_TOKEN5,user.getFace_token5());
+        }
+        db.insert(UserMetaData.UserTable.TABLE_NAME,UserMetaData.UserTable.USER_NAME,contentValues);
+        db.close();
+        Log.i("addUser_User: ","Success!");
+    }
+
+    public ArrayList<User> findAllUser_User(){
+        SQLiteDatabase db = databaseHelper.getReadableDatabase();
+        Cursor cursor = db.query(UserMetaData.UserTable.TABLE_NAME,null,null,null,null,null,null);
+        ArrayList<User> list = new ArrayList<>();
+        while (cursor.moveToNext()){
+            User user = new User();
+            user.setUser_name(cursor.getString(cursor.getColumnIndex("user_name")));
+            user.setFace_token1(cursor.getString(cursor.getColumnIndex("face_token1")));
+            user.setFace_token2(cursor.getString(cursor.getColumnIndex("face_token2")));
+            user.setFace_token3(cursor.getString(cursor.getColumnIndex("face_token3")));
+            user.setFace_token4(cursor.getString(cursor.getColumnIndex("face_token4")));
+            user.setFace_token5(cursor.getString(cursor.getColumnIndex("face_token5")));
+            list.add(user);
+        }
+        cursor.close();
+        return list;
     }
 
 

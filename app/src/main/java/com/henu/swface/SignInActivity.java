@@ -52,9 +52,13 @@ import com.henu.swface.util.ParseResult;
 import com.iflytek.cloud.FaceDetector;
 import com.iflytek.cloud.SpeechUtility;
 import com.iflytek.cloud.util.Accelerometer;
+import com.megvii.cloud.http.CommonOperate;
+import com.megvii.cloud.http.FaceOperate;
 import com.megvii.cloud.http.FaceSetOperate;
 
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -71,14 +75,14 @@ import okhttp3.Response;
 /**
  * 离线视频流检测
  */
-public class VideoRecognise extends Activity {
+public class SignInActivity extends Activity {
 
 	private final static String API_KEY = "lJsij4n8pYEj3bW-tSJqEhRgkdfHobC8";
 	private final static String API_Secret = "i1H3kRBBzJ2Wo_1T-6RsbRmWgcHAREww";
-	private final static int DETECT_SUCCESS = 0X110;
-	private final static int DETECT_FAILED_IOEXCEPTION = 0X111;
-	private final static int DETECT_FAILED_NOFACE = 0X112;
-	private final static String TAG = VideoRecognise.class.getSimpleName();
+	private final static int SIGN_IN_SUCCESS = 0x200;
+	private final static int SIGN_IN_FAILED_IOEXCEPTION = 0x201;
+	private final static int SIGN_IN_FAILED_FILENOTFIND = 0x202;
+	private final static String TAG = SignInActivity.class.getSimpleName();
 	private SurfaceView mPreviewSurface;
 	private SurfaceView mFaceSurface;
 	private AlertDialog dialog = null;
@@ -113,8 +117,8 @@ public class VideoRecognise extends Activity {
 		initUI();
 		nv21 = new byte[PREVIEW_WIDTH * PREVIEW_HEIGHT * 2];
 		buffer = new byte[PREVIEW_WIDTH * PREVIEW_HEIGHT * 2];
-		mAcc = new Accelerometer(VideoRecognise.this);
-		mFaceDetector = FaceDetector.createDetector(VideoRecognise.this, null);
+		mAcc = new Accelerometer(SignInActivity.this);
+		mFaceDetector = FaceDetector.createDetector(SignInActivity.this, null);
 	}
 
 
@@ -217,7 +221,7 @@ public class VideoRecognise extends Activity {
 		});
 
 		setSurfaceSize();
-		mToast = Toast.makeText(VideoRecognise.this, "", Toast.LENGTH_SHORT);
+		mToast = Toast.makeText(SignInActivity.this, "", Toast.LENGTH_SHORT);
 
 		button_take_photos.setClickable(true);
 		button_take_photos.setOnClickListener(new OnClickListener() {
@@ -227,30 +231,18 @@ public class VideoRecognise extends Activity {
 				Camera.PictureCallback jpeg = new Camera.PictureCallback() {
 					@Override
 					public void onPictureTaken(byte[] data, Camera camera) {
-						String filename = "waitForRename.jpg";
-						FileOutputStream fos = null;
 						try {
-							fos = new FileOutputStream(
-									new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) +
-											"/" + filename));
-							//获取拍到的图片Bitmap
-							Bitmap bitmap_source = BitmapFactory.decodeByteArray(data, 0, data.length);
+							String filename = "waitForSearch.jpg";
+							File imageFile = new File(
+									Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) +
+											"/" + filename);
+							FileOutputStream fos = new FileOutputStream(imageFile);
+							Bitmap mBitmap = compressPicture(data);
 							BufferedOutputStream bos = new BufferedOutputStream(fos);
-							// 根据旋转角度，生成旋转矩阵
-							Matrix matrix = new Matrix();
-							matrix.postRotate(270);
-							//旋转图片
-							Bitmap mBitmap1 = Bitmap.createBitmap(bitmap_source, 0, 0, bitmap_source.getWidth(), bitmap_source.getHeight(), matrix, true);
-							//裁剪图片压缩图片大小为尺寸1200*900，便于传输存储
-							Bitmap mBitmap = mBitmap1.createScaledBitmap(mBitmap1, STORAGE_WIDTH, STORAGE_HEIGHT, false);
 							mBitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
-							//fos.write(data);
 							fos.flush();
 							fos.close();
-							System.out.println("图片保存成功");
-							Intent intent = new Intent(getApplicationContext(), DialogInputNameActivity.class);
-							//intent.putExtra("data",data);
-							startActivityForResult(intent, 0);
+							searchByOuterId(imageFile);
 						} catch (Exception e) {
 							System.out.println("图片保存异常" + e.getMessage());
 							e.printStackTrace();
@@ -262,67 +254,64 @@ public class VideoRecognise extends Activity {
 		});
 	}
 
+	private void searchByOuterId(final File imageFile) {
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				OkHttpClient client = new OkHttpClient();
+				RequestBody requestBody = postBody(imageFile);
+				Request request = new Request.Builder().url("https://api-cn.faceplusplus.com/facepp/v3/search")
+						.post(requestBody).build();
+				Response response = null;
+				try {
+					response = client.newCall(request).execute();
+					Log.i(TAG, "searchByOuterId: " + response.body().string());
+				} catch (Exception e) {
+					Log.e(TAG, "searchByOuterId: " + e.getMessage());
+					e.printStackTrace();
+				}finally {
 
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		super.onActivityResult(requestCode, resultCode, data);
-		String username = data.getStringExtra("username");
-		if (resultCode == 1) {
-			File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) +
-					"/waitForRename.jpg");
-			if (file.exists()) {
-				File newFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-						+ "/" + username + "_1.jpg");
-				final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-				if (!file.renameTo(newFile)) {
-					builder.setCancelable(false);
-					builder.setTitle("温馨提示：");
-					builder.setMessage("文件重命名失败，请检查磁盘空间是否充足？");
-					builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialogInterface, int i) {
-							dialog.cancel();
-							finish();
-						}
-					});
-					dialog = builder.show();
-					return;
-				}
-				builder.setCancelable(false);
-				builder.setTitle("温馨提示：");
-				builder.setMessage("正在注册新人脸，请保持网络通畅。");
-				builder.setView(new ProgressBar(this));
-				dialog = builder.show();
-				RegisterFace(newFile,username);
-			} else {
-				Toast.makeText(this, "错误代码-1，拍照文件保存失败，请检查磁盘空间！", Toast.LENGTH_LONG).show();
-			}
-			//mCamera.startPreview();//保存之后返回预览界面
-		} else {
-			//mCamera.startPreview();//保存之后返回预览界面
-			File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) +
-					"/waitForRename.jpg");
-			if (file.exists()) {
-				if (file.delete()) {
-					Toast.makeText(this, "已取消保存人脸", Toast.LENGTH_LONG).show();
-					initUI();
-					mCameraId = CameraInfo.CAMERA_FACING_FRONT;
-					openCamera();
-					mCamera.startPreview();
-				} else {
-					Toast.makeText(this, "请检查磁盘空间，人脸删除失败", Toast.LENGTH_LONG).show();
 				}
 			}
-		}
+		}).start();
+
 	}
 
+	protected RequestBody postBody(File file) {
+		// 设置请求体
+		MediaType MEDIA_TYPE_JPG = MediaType.parse("image/jpg");
+		RequestBody body = MultipartBody.create(MEDIA_TYPE_JPG, file);
+		MultipartBody.Builder builder = new MultipartBody.Builder();
+		builder.setType(MultipartBody.FORM);
+		//这里是 封装上传图片参数
+		builder.addFormDataPart("api_key", API_KEY);
+		builder.addFormDataPart("api_secret", API_Secret);
+		builder.addFormDataPart("image_file", file.getName(), body);
+		SharedPreferences sp = getSharedPreferences("login", Context.MODE_PRIVATE);
+		String outerId = sp.getString("username", "default");
+		builder.addFormDataPart("outer_id", outerId);
+		return builder.build();
+	}
+
+
+	private Bitmap compressPicture(byte[] data) {
+		//获取拍到的图片Bitmap
+		Bitmap bitmap_source = BitmapFactory.decodeByteArray(data, 0, data.length);
+		// 根据旋转角度，生成旋转矩阵
+		Matrix matrix = new Matrix();
+		matrix.postRotate(270);
+		//旋转图片
+		Bitmap mBitmap1 = Bitmap.createBitmap(bitmap_source, 0, 0, bitmap_source.getWidth(), bitmap_source.getHeight(), matrix, true);
+		//裁剪图片压缩图片大小为尺寸1200*900，便于传输存储
+		return mBitmap1.createScaledBitmap(mBitmap1, STORAGE_WIDTH, STORAGE_HEIGHT, false);
+	}
 
 	private Handler myhandler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
-			AlertDialog.Builder newdialog = new AlertDialog.Builder(VideoRecognise.this);
+			AlertDialog.Builder newdialog = new AlertDialog.Builder(SignInActivity.this);
 			switch (msg.arg1) {
-				case DETECT_SUCCESS:
+				case SIGN_IN_SUCCESS:
 					newdialog.setCancelable(false);
 					newdialog.setTitle("温馨提示：");
 					newdialog.setMessage("恭喜，注册成功！\n点击确定返回主界面");
@@ -335,7 +324,7 @@ public class VideoRecognise extends Activity {
 					dialog.cancel();
 					newdialog.show();
 					break;
-				case DETECT_FAILED_IOEXCEPTION:
+				case SIGN_IN_FAILED_IOEXCEPTION:
 					newdialog.setCancelable(false);
 					newdialog.setTitle("温馨提示：");
 					newdialog.setMessage("注册失败！\n请检查网络连接！！");
@@ -348,7 +337,7 @@ public class VideoRecognise extends Activity {
 					dialog.cancel();
 					newdialog.show();
 					break;
-				case DETECT_FAILED_NOFACE:
+				case SIGN_IN_FAILED_FILENOTFIND:
 					newdialog.setCancelable(false);
 					newdialog.setTitle("温馨提示：");
 					newdialog.setMessage("注册失败！\n未检测到人脸，拍照时请保证光线充足且不要逆光！！");
@@ -370,93 +359,70 @@ public class VideoRecognise extends Activity {
 	};
 
 
-	private void RegisterFace(final File imageFile, final String username) {
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-				//CommonOperate commonOperate = new CommonOperate(API_KEY,API_Secret,false);
-				// 参数为本地图片文件二进制数组
-				//byte[] image = getBytes(imageFile);   // readImageFile函数仅为示例
-				OkHttpClient client = new OkHttpClient();
-				RequestBody requestBody = postBody(imageFile);
-				Request request = new Request.Builder().url("https://api-cn.faceplusplus.com/facepp/v3/detect")
-						.post(requestBody).build();
-				try {
-					Response response = client.newCall(request).execute();
-					String JSON = response.body().string();
-					JSONUtil jsonUtil = new JSONUtil();
-					Face face = jsonUtil.parseDetectFaceJSON(JSON);
-					if (face == null) {
-						Message message = new Message();
-						message.arg1 = DETECT_FAILED_NOFACE;
-						myhandler.sendMessage(message);
-					} else {
-						face.setImage_path(imageFile.getAbsolutePath());
-						DatabaseAdapter db = new DatabaseAdapter(getApplicationContext());
-						db.addFace_Faces(face);
-						User user = new User();
-						user.setUser_name(username);
-						user.setFace_token1(face.getFace_token());
-						db.addUser_User(user);
-						SharedPreferences sp = getSharedPreferences("login", Context.MODE_PRIVATE);
-						String outerId = sp.getString("username","default");
-						FaceSetOperate faceSetOperate = new FaceSetOperate(API_KEY,API_Secret,false);
-						try {
-							com.megvii.cloud.http.Response response1 = faceSetOperate.createFaceSet("默认分组",outerId,null,face.getFace_token(),null,1);
-							String JSON1 = new String(response1.getContent(),"UTF-8");
-							Log.i(TAG, "faceSetOperate.createFaceSet(): "+JSON1);
-						} catch (Exception e) {
-							e.printStackTrace();
-							Log.e(TAG, "faceSetOperate.createFaceSet(): ", e);
-							Message message = new Message();
-							message.arg1 = DETECT_FAILED_IOEXCEPTION;
-							myhandler.sendMessage(message);
-							return;
-						}
-						ArrayList<Face> face_list = db.findAll_Faces();
-						ArrayList<User> user_face = db.findAllUser_User();
-						for (Face face1 : face_list) {
-							Log.v("faceList:", face1.toString());
-						}
-						for (User user1: user_face) {
-							Log.v("userList:", user1.toString());
-						}
-						Message message = new Message();
-						message.arg1 = DETECT_SUCCESS;
-						myhandler.sendMessage(message);
-					}
-				} catch (IOException e) {
-					Message message = new Message();
-					message.arg1 = DETECT_FAILED_IOEXCEPTION;
-					myhandler.sendMessage(message);
-					e.printStackTrace();
-				}
-			}
-		}).start();
-	}
-
-
-
-
-	protected RequestBody postBody(File file) {
-		// 设置请求体
-		MediaType MEDIA_TYPE_JPG = MediaType.parse("image/jpg");
-		RequestBody body = MultipartBody.create(MEDIA_TYPE_JPG, file);
-		MultipartBody.Builder builder = new MultipartBody.Builder();
-		builder.setType(MultipartBody.FORM);
-		//这里是 封装上传图片参数
-//		// 封装请求参数,这里最重要
-//		HashMap<String, String> params = new HashMap<>();
-//		params.put("api_key",API_KEY);
-//		params.put("api_secret",API_Secret);
-//		//参数以添加header方式将参数封装，否则上传参数为空
-		builder.addFormDataPart("api_key", API_KEY);
-		builder.addFormDataPart("api_secret", API_Secret);
-		builder.addFormDataPart("image_file", file.getName(), body);
-		//builder.addFormDataPart("return_landmark", "1");
-		builder.addFormDataPart("return_attributes", "gender,age,smiling,headpose,facequality,blur,eyestatus,ethnicity");
-		return builder.build();
-	}
+//	private void RegisterFace(final File imageFile, final String username) {
+//		new Thread(new Runnable() {
+//			@Override
+//			public void run() {
+//				//CommonOperate commonOperate = new CommonOperate(API_KEY,API_Secret,false);
+//				// 参数为本地图片文件二进制数组
+//				//byte[] image = getBytes(imageFile);   // readImageFile函数仅为示例
+//				OkHttpClient client = new OkHttpClient();
+//				RequestBody requestBody = postBody(imageFile);
+//				Request request = new Request.Builder().url("https://api-cn.faceplusplus.com/facepp/v3/detect")
+//						.post(requestBody).build();
+//				try {
+//					Response response = client.newCall(request).execute();
+//					String JSON = response.body().string();
+//					JSONUtil jsonUtil = new JSONUtil();
+//					Face face = jsonUtil.parseDetectFaceJSON(JSON);
+//					if (face == null) {
+//						Message message = new Message();
+//						message.arg1 = DETECT_FAILED_NOFACE;
+//						myhandler.sendMessage(message);
+//					} else {
+//						face.setImage_path(imageFile.getAbsolutePath());
+//						DatabaseAdapter db = new DatabaseAdapter(getApplicationContext());
+//						db.addFace_Faces(face);
+//						User user = new User();
+//						user.setUser_name(username);
+//						user.setFace_token1(face.getFace_token());
+//						db.addUser_User(user);
+//						SharedPreferences sp = getSharedPreferences("login", Context.MODE_PRIVATE);
+//						String outerId = sp.getString("username","default");
+//						FaceSetOperate faceSetOperate = new FaceSetOperate(API_KEY,API_Secret,false);
+//						try {
+//							com.megvii.cloud.http.Response response1 = faceSetOperate.createFaceSet("默认分组",outerId,null,face.getFace_token(),null,1);
+//							String JSON1 = new String(response1.getContent(),"UTF-8");
+//							Log.i(TAG, "faceSetOperate.createFaceSet(): "+JSON1);
+//						} catch (Exception e) {
+//							e.printStackTrace();
+//							Log.e(TAG, "faceSetOperate.createFaceSet(): ", e);
+//							Message message = new Message();
+//							message.arg1 = DETECT_FAILED_IOEXCEPTION;
+//							myhandler.sendMessage(message);
+//							return;
+//						}
+//						ArrayList<Face> face_list = db.findAll_Faces();
+//						ArrayList<User> user_face = db.findAllUser_User();
+//						for (Face face1 : face_list) {
+//							Log.v("faceList:", face1.toString());
+//						}
+//						for (User user1: user_face) {
+//							Log.v("userList:", user1.toString());
+//						}
+//						Message message = new Message();
+//						message.arg1 = DETECT_SUCCESS;
+//						myhandler.sendMessage(message);
+//					}
+//				} catch (IOException e) {
+//					Message message = new Message();
+//					message.arg1 = DETECT_FAILED_IOEXCEPTION;
+//					myhandler.sendMessage(message);
+//					e.printStackTrace();
+//				}
+//			}
+//		}).start();
+//	}
 
 	private void openCamera() {
 		if (null != mCamera) {

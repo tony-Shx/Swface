@@ -35,6 +35,8 @@
         </activity>
         <activity android:name=".VideoRecognise">
         </activity>
+        <activity android:name=".SignInActivity">
+        </activity>
         <activity android:name=".DialogInputNameActivity" android:theme="@android:style/Theme.Dialog">
         </activity>
     </application>

@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 				startActivity(intent);
 				break;
 			case R.id.button_sign_in:
-
+				startActivity(new Intent(this,SignInActivity.class));
 				break;
 			default:
 				break;

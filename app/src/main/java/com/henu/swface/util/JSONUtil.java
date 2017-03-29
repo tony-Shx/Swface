@@ -15,7 +15,7 @@ public class JSONUtil {
 	public JSONUtil() {
 	}
 
-	public Face parseFaceJSON(String JSON){
+	public Face parseDetectFaceJSON(String JSON){
 		System.out.println("!!!!!!!!!"+JSON);
 		Face face = new Face();
 		try {
@@ -63,5 +63,7 @@ public class JSONUtil {
 		}
 		return face;
 	}
+
+
 
 }

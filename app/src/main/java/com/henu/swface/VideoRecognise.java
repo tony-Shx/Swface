@@ -3,8 +3,10 @@ package com.henu.swface;
 import android.Manifest.permission;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -50,6 +52,7 @@ import com.henu.swface.util.ParseResult;
 import com.iflytek.cloud.FaceDetector;
 import com.iflytek.cloud.SpeechUtility;
 import com.iflytek.cloud.util.Accelerometer;
+import com.megvii.cloud.http.FaceSetOperate;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -62,6 +65,7 @@ import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
+import okhttp3.Response;
 
 
 /**
@@ -378,10 +382,10 @@ public class VideoRecognise extends Activity {
 				Request request = new Request.Builder().url("https://api-cn.faceplusplus.com/facepp/v3/detect")
 						.post(requestBody).build();
 				try {
-					okhttp3.Response response = client.newCall(request).execute();
+					Response response = client.newCall(request).execute();
 					String JSON = response.body().string();
 					JSONUtil jsonUtil = new JSONUtil();
-					Face face = jsonUtil.parseFaceJSON(JSON);
+					Face face = jsonUtil.parseDetectFaceJSON(JSON);
 					if (face == null) {
 						Message message = new Message();
 						message.arg1 = DETECT_FAILED_NOFACE;
@@ -394,7 +398,21 @@ public class VideoRecognise extends Activity {
 						user.setUser_name(username);
 						user.setFace_token1(face.getFace_token());
 						db.addUser_User(user);
-
+						SharedPreferences sp = getSharedPreferences("login", Context.MODE_PRIVATE);
+						String outerId = sp.getString("username","default");
+						FaceSetOperate faceSetOperate = new FaceSetOperate(API_KEY,API_Secret,false);
+						try {
+							com.megvii.cloud.http.Response response1 = faceSetOperate.createFaceSet("默认分组",outerId,null,face.getFace_token(),null,1);
+							String JSON1 = new String(response1.getContent(),"UTF-8");
+							Log.i(TAG, "faceSetOperate.createFaceSet(): "+JSON1);
+						} catch (Exception e) {
+							e.printStackTrace();
+							Log.e(TAG, "faceSetOperate.createFaceSet(): ", e);
+							Message message = new Message();
+							message.arg1 = DETECT_FAILED_IOEXCEPTION;
+							myhandler.sendMessage(message);
+							return;
+						}
 						ArrayList<Face> face_list = db.findAll_Faces();
 						ArrayList<User> user_face = db.findAllUser_User();
 						for (Face face1 : face_list) {

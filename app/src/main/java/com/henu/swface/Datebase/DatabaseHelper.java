@@ -26,6 +26,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String CREATE_TABLE_USER = "CREATE TABLE IF NOT EXISTS User(_id INTEGER PRIMARY KEY AUTOINCREMENT," +
             "user_name TEXT,face_token1 TEXT,face_token2 TEXT,face_token3 TEXT,face_token4 TEXT,face_token5 TEXT)";
     private static final String DROP_TABLE_USER = "DROP TABLE IF EXISTS User";
+    private static final String CREATE_TABLE_SIGNLOG = "CREATE TABLE IF NOT EXISTS SignLog(_id INTEGER PRIMARY KEY AUTOINCREMENT," +
+            "user_name TEXT,confidence REAL,time NUMERIC)";
+    private static final String DROP_TABLE_SIGNLOG = "DROP TABLE IF EXISTS SignLog";
+
     public DatabaseHelper(Context context) {
         super(context, DB_NAME, null, version);
     }
@@ -34,13 +38,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(CREATE_TABLE_FACES);
         db.execSQL(CREATE_TABLE_USER);
+        db.execSQL(CREATE_TABLE_SIGNLOG);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL(DROP_TABLE_FACES);
         db.execSQL(DROP_TABLE_USER);
+        db.execSQL(DROP_TABLE_SIGNLOG);
         db.execSQL(CREATE_TABLE_FACES);
         db.execSQL(CREATE_TABLE_USER);
+        db.execSQL(CREATE_TABLE_SIGNLOG);
+
     }
 }

@@ -48,6 +48,7 @@ import com.henu.swface.Datebase.DatabaseAdapter;
 import com.henu.swface.Datebase.DatabaseHelper;
 import com.henu.swface.VO.Face;
 import com.henu.swface.VO.FaceSignIn;
+import com.henu.swface.VO.SignLog;
 import com.henu.swface.VO.User;
 import com.henu.swface.util.FaceRect;
 import com.henu.swface.util.FaceUtil;
@@ -352,9 +353,9 @@ public class SignInActivity extends Activity {
                 case SIGN_IN_SUCCESS:
                     newdialog.setCancelable(false);
                     newdialog.setTitle("温馨提示：");
-                    User user = (User) msg.obj;
+                    final User user = (User) msg.obj;
                     Bundle date = msg.getData();
-                    float confidence = date.getFloat("confidence");
+                    final float confidence = date.getFloat("confidence");
                     float thresholds3 = date.getFloat("thresholds3");
                     float thresholds4 = date.getFloat("thresholds4");
                     float thresholds5 = date.getFloat("thresholds5");
@@ -367,6 +368,12 @@ public class SignInActivity extends Activity {
                         newdialog.setPositiveButton("完成", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
+                                SignLog signLog = new SignLog();
+                                signLog.setTime(System.currentTimeMillis());
+                                signLog.setUser_name(user.getUser_name());
+                                signLog.setConfidence(confidence);
+                                DatabaseAdapter db = new DatabaseAdapter(getApplicationContext());
+                                db.addLog_SignLog(signLog);
                                 dialog.dismiss();
                                 finish();
                             }
@@ -380,6 +387,12 @@ public class SignInActivity extends Activity {
                         newdialog.setPositiveButton("完成", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
+                                SignLog signLog = new SignLog();
+                                signLog.setTime(System.currentTimeMillis());
+                                signLog.setUser_name(user.getUser_name());
+                                signLog.setConfidence(confidence);
+                                DatabaseAdapter db = new DatabaseAdapter(getApplicationContext());
+                                db.addLog_SignLog(signLog);
                                 dialog.dismiss();
                                 finish();
                             }
@@ -455,71 +468,6 @@ public class SignInActivity extends Activity {
         }
     };
 
-
-//	private void RegisterFace(final File imageFile, final String username) {
-//		new Thread(new Runnable() {
-//			@Override
-//			public void run() {
-//				//CommonOperate commonOperate = new CommonOperate(API_KEY,API_Secret,false);
-//				// 参数为本地图片文件二进制数组
-//				//byte[] image = getBytes(imageFile);   // readImageFile函数仅为示例
-//				OkHttpClient client = new OkHttpClient();
-//				RequestBody requestBody = postBody(imageFile);
-//				Request request = new Request.Builder().url("https://api-cn.faceplusplus.com/facepp/v3/detect")
-//						.post(requestBody).build();
-//				try {
-//					Response response = client.newCall(request).execute();
-//					String JSON = response.body().string();
-//					JSONUtil jsonUtil = new JSONUtil();
-//					Face face = jsonUtil.parseDetectFaceJSON(JSON);
-//					if (face == null) {
-//						Message message = new Message();
-//						message.arg1 = DETECT_FAILED_NOFACE;
-//						myhandler.sendMessage(message);
-//					} else {
-//						face.setImage_path(imageFile.getAbsolutePath());
-//						DatabaseAdapter db = new DatabaseAdapter(getApplicationContext());
-//						db.addFace_Faces(face);
-//						User user = new User();
-//						user.setUser_name(username);
-//						user.setFace_token1(face.getFace_token());
-//						db.addUser_User(user);
-//						SharedPreferences sp = getSharedPreferences("login", Context.MODE_PRIVATE);
-//						String outerId = sp.getString("username","default");
-//						FaceSetOperate faceSetOperate = new FaceSetOperate(API_KEY,API_Secret,false);
-//						try {
-//							com.megvii.cloud.http.Response response1 = faceSetOperate.createFaceSet("默认分组",outerId,null,face.getFace_token(),null,1);
-//							String JSON1 = new String(response1.getContent(),"UTF-8");
-//							Log.i(TAG, "faceSetOperate.createFaceSet(): "+JSON1);
-//						} catch (Exception e) {
-//							e.printStackTrace();
-//							Log.e(TAG, "faceSetOperate.createFaceSet(): ", e);
-//							Message message = new Message();
-//							message.arg1 = DETECT_FAILED_IOEXCEPTION;
-//							myhandler.sendMessage(message);
-//							return;
-//						}
-//						ArrayList<Face> face_list = db.findAll_Faces();
-//						ArrayList<User> user_face = db.findAllUser_User();
-//						for (Face face1 : face_list) {
-//							Log.v("faceList:", face1.toString());
-//						}
-//						for (User user1: user_face) {
-//							Log.v("userList:", user1.toString());
-//						}
-//						Message message = new Message();
-//						message.arg1 = DETECT_SUCCESS;
-//						myhandler.sendMessage(message);
-//					}
-//				} catch (IOException e) {
-//					Message message = new Message();
-//					message.arg1 = DETECT_FAILED_IOEXCEPTION;
-//					myhandler.sendMessage(message);
-//					e.printStackTrace();
-//				}
-//			}
-//		}).start();
-//	}
 
     private void openCamera() {
         if (null != mCamera) {

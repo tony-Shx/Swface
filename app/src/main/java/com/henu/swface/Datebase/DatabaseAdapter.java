@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import com.henu.swface.VO.Face;
+import com.henu.swface.VO.SignLog;
 import com.henu.swface.VO.User;
 
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ import java.util.ArrayList;
  */
 
 public class DatabaseAdapter {
+    private static final String TAG = "DatabaseAdapter";
 
     private static final String Sql_findUserByFaceToken = "SELECT user_name FROM User WHERE face_token1 = ? OR face_token2 = ? OR face_token3 = ? OR face_token4 = ? OR face_token5 = ?;";
 
@@ -210,15 +212,26 @@ public class DatabaseAdapter {
 
     public User findUserByFaceToken(String facetoken) {
         SQLiteDatabase db = databaseHelper.getReadableDatabase();
-        StringBuffer sb = new StringBuffer();
-        Cursor cursor;
         String[] arge = {facetoken,facetoken,facetoken,facetoken,facetoken};
-        cursor = db.rawQuery(Sql_findUserByFaceToken,arge);
+        Cursor cursor = db.rawQuery(Sql_findUserByFaceToken,arge);
         User user = new User();
         while (cursor.moveToNext()){
             user.setUser_name(cursor.getString(cursor.getColumnIndex("user_name")));
         }
+        cursor.close();
+        db.close();
         return user;
+    }
+
+    public void addLog_SignLog(SignLog log){
+        SQLiteDatabase db = databaseHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("user_name",log.getUser_name());
+        values.put("confidence",log.getConfidence());
+        values.put("time",log.getTime());
+        db.insert(SignLogData.SignLogTable.TABLE_NAME,SignLogData.SignLogTable.TIME,values);
+        db.close();
+        Log.i(TAG, "addLog_SignLog: success");
     }
 
 }

@@ -1,6 +1,9 @@
 package com.henu.swface.util;
 
+import android.util.Log;
+
 import com.henu.swface.VO.Face;
+import com.henu.swface.VO.FaceSignIn;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -11,6 +14,7 @@ import org.json.JSONObject;
  */
 
 public class JSONUtil {
+	private static final String TAG = "JSONUtil";
 
 	public JSONUtil() {
 	}
@@ -62,6 +66,27 @@ public class JSONUtil {
 			return null;
 		}
 		return face;
+	}
+
+	public FaceSignIn parseSearchFaceJSON(String JSON){
+		Log.i(TAG, "parseSearchFaceJSON: " + JSON);
+		FaceSignIn faceSignIn = new FaceSignIn();
+		try {
+			JSONObject jsonObject = new JSONObject(JSON);
+			faceSignIn.setTime_used(jsonObject.getInt("time_used"));
+			JSONObject thresholds = jsonObject.getJSONObject("thresholds");
+			faceSignIn.setThresholds3(thresholds.getDouble("1e-3"));
+			faceSignIn.setThresholds4(thresholds.getDouble("1e-4"));
+			faceSignIn.setThresholds5(thresholds.getDouble("1e-5"));
+			JSONArray results = jsonObject.getJSONArray("results");
+			faceSignIn.setConfidence(results.getJSONObject(0).getDouble("confidence"));
+			faceSignIn.setFace_token(results.getJSONObject(0).getString("face_token"));
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		Log.i(TAG, "parseSearchFaceJSON_faceSignIn: "+faceSignIn.toString());
+		return faceSignIn;
+
 	}
 
 

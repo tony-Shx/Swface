@@ -17,12 +17,15 @@ import java.util.ArrayList;
 
 public class DatabaseAdapter {
 
+    private static final String Sql_findUserByFaceToken = "SELECT user_name FROM User WHERE face_token1 = ? OR face_token2 = ? OR face_token3 = ? OR face_token4 = ? OR face_token5 = ?;";
+
     private DatabaseHelper databaseHelper;
+
     public DatabaseAdapter(Context context) {
         databaseHelper = new DatabaseHelper(context);
     }
 
-    public void addFace_Faces(Face face){
+    public void addFace_Faces(Face face) {
         SQLiteDatabase db = databaseHelper.getWritableDatabase();
         //将数据按照键值对存入ContentValues
         ContentValues values = new ContentValues();
@@ -54,32 +57,33 @@ public class DatabaseAdapter {
         values.put(FaceMetaData.FaceTable.HEADPOSE_ROLL_ANGLE, face.getHeadpose_roll_angle());
         values.put(FaceMetaData.FaceTable.BLURNESS, face.getBlurness());
         values.put(FaceMetaData.FaceTable.SMILE, face.getSmile());
-        values.put(FaceMetaData.FaceTable.FACEQUALITY,face.getFacequality());
-        values.put(FaceMetaData.FaceTable.FACE_TOKEN,face.getFace_token());
-        values.put(FaceMetaData.FaceTable.IMAGE_PATH,face.getImage_path());
+        values.put(FaceMetaData.FaceTable.FACEQUALITY, face.getFacequality());
+        values.put(FaceMetaData.FaceTable.FACE_TOKEN, face.getFace_token());
+        values.put(FaceMetaData.FaceTable.IMAGE_PATH, face.getImage_path());
         //执行插入操作
-        db.insert(FaceMetaData.FaceTable.TABLE_NAME, FaceMetaData.FaceTable.IMAGE_ID,values);
+        db.insert(FaceMetaData.FaceTable.TABLE_NAME, FaceMetaData.FaceTable.IMAGE_ID, values);
         db.close();
         System.out.println("插入数据成功！");
     }
-    public void delete_Faces(int id){
+
+    public void delete_Faces(int id) {
         SQLiteDatabase db = databaseHelper.getWritableDatabase();
         String[] args = {String.valueOf(id)};
-        db.delete(FaceMetaData.FaceTable.TABLE_NAME,"image_id=?",args);
+        db.delete(FaceMetaData.FaceTable.TABLE_NAME, "image_id=?", args);
         db.close();
     }
 
-    public void update_Faces(Face face){
+    public void update_Faces(Face face) {
 
     }
 
-    public Face findById_Faces(int id){
+    public Face findById_Faces(int id) {
         SQLiteDatabase db = databaseHelper.getReadableDatabase();
         String[] selectionArgs = {String.valueOf(id)};
-        Cursor cursor = db.query(FaceMetaData.FaceTable.TABLE_NAME,null,"_id=?",selectionArgs,null,null,null);
+        Cursor cursor = db.query(FaceMetaData.FaceTable.TABLE_NAME, null, "_id=?", selectionArgs, null, null, null);
         Face face = null;
-        while (cursor.moveToNext()){
-            face =  new Face();
+        while (cursor.moveToNext()) {
+            face = new Face();
             face.set_id(cursor.getInt(cursor.getColumnIndex("_id")));
             face.setImage_id(cursor.getString(cursor.getColumnIndex("image_id")));
             face.setRequest_id(cursor.getString(cursor.getColumnIndex("request_id")));
@@ -117,12 +121,12 @@ public class DatabaseAdapter {
         return face;
     }
 
-    public ArrayList<Face> findAll_Faces(){
+    public ArrayList<Face> findAll_Faces() {
         SQLiteDatabase db = databaseHelper.getReadableDatabase();
-        Cursor cursor = db.query(FaceMetaData.FaceTable.TABLE_NAME,null,null,null,null,null,null);
+        Cursor cursor = db.query(FaceMetaData.FaceTable.TABLE_NAME, null, null, null, null, null, null);
         ArrayList<Face> faceArrayList = new ArrayList<>();
-        while (cursor.moveToNext()){
-            Face face =  new Face();
+        while (cursor.moveToNext()) {
+            Face face = new Face();
             face.set_id(cursor.getInt(cursor.getColumnIndex("_id")));
             face.setImage_id(cursor.getString(cursor.getColumnIndex("image_id")));
             face.setRequest_id(cursor.getString(cursor.getColumnIndex("request_id")));
@@ -162,35 +166,35 @@ public class DatabaseAdapter {
     }
 
 
-    public void addUser_User(User user){
+    public void addUser_User(User user) {
         SQLiteDatabase db = databaseHelper.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
-        contentValues.put(UserMetaData.UserTable.USER_NAME,user.getUser_name());
-        if(user.getFace_token1()!=null&&!user.getFace_token1().isEmpty()){
-            contentValues.put(UserMetaData.UserTable.FACE_TOKEN1,user.getFace_token1());
+        contentValues.put(UserMetaData.UserTable.USER_NAME, user.getUser_name());
+        if (user.getFace_token1() != null && !user.getFace_token1().isEmpty()) {
+            contentValues.put(UserMetaData.UserTable.FACE_TOKEN1, user.getFace_token1());
         }
-        if(user.getFace_token2()!=null&&!user.getFace_token2().isEmpty()){
-            contentValues.put(UserMetaData.UserTable.FACE_TOKEN2,user.getFace_token2());
+        if (user.getFace_token2() != null && !user.getFace_token2().isEmpty()) {
+            contentValues.put(UserMetaData.UserTable.FACE_TOKEN2, user.getFace_token2());
         }
-        if(user.getFace_token3()!=null&&!user.getFace_token3().isEmpty()){
-            contentValues.put(UserMetaData.UserTable.FACE_TOKEN3,user.getFace_token3());
+        if (user.getFace_token3() != null && !user.getFace_token3().isEmpty()) {
+            contentValues.put(UserMetaData.UserTable.FACE_TOKEN3, user.getFace_token3());
         }
-        if(user.getFace_token4()!=null&&!user.getFace_token4().isEmpty()){
-            contentValues.put(UserMetaData.UserTable.FACE_TOKEN4,user.getFace_token4());
+        if (user.getFace_token4() != null && !user.getFace_token4().isEmpty()) {
+            contentValues.put(UserMetaData.UserTable.FACE_TOKEN4, user.getFace_token4());
         }
-        if(user.getFace_token5()!=null&&!user.getFace_token5().isEmpty()){
-            contentValues.put(UserMetaData.UserTable.FACE_TOKEN5,user.getFace_token5());
+        if (user.getFace_token5() != null && !user.getFace_token5().isEmpty()) {
+            contentValues.put(UserMetaData.UserTable.FACE_TOKEN5, user.getFace_token5());
         }
-        db.insert(UserMetaData.UserTable.TABLE_NAME,UserMetaData.UserTable.USER_NAME,contentValues);
+        db.insert(UserMetaData.UserTable.TABLE_NAME, UserMetaData.UserTable.USER_NAME, contentValues);
         db.close();
-        Log.i("addUser_User: ","Success!");
+        Log.i("addUser_User: ", "Success!");
     }
 
-    public ArrayList<User> findAllUser_User(){
+    public ArrayList<User> findAllUser_User() {
         SQLiteDatabase db = databaseHelper.getReadableDatabase();
-        Cursor cursor = db.query(UserMetaData.UserTable.TABLE_NAME,null,null,null,null,null,null);
+        Cursor cursor = db.query(UserMetaData.UserTable.TABLE_NAME, null, null, null, null, null, null);
         ArrayList<User> list = new ArrayList<>();
-        while (cursor.moveToNext()){
+        while (cursor.moveToNext()) {
             User user = new User();
             user.setUser_name(cursor.getString(cursor.getColumnIndex("user_name")));
             user.setFace_token1(cursor.getString(cursor.getColumnIndex("face_token1")));
@@ -204,6 +208,17 @@ public class DatabaseAdapter {
         return list;
     }
 
-
+    public User findUserByFaceToken(String facetoken) {
+        SQLiteDatabase db = databaseHelper.getReadableDatabase();
+        StringBuffer sb = new StringBuffer();
+        Cursor cursor;
+        String[] arge = {facetoken,facetoken,facetoken,facetoken,facetoken};
+        cursor = db.rawQuery(Sql_findUserByFaceToken,arge);
+        User user = new User();
+        while (cursor.moveToNext()){
+            user.setUser_name(cursor.getString(cursor.getColumnIndex("user_name")));
+        }
+        return user;
+    }
 
 }

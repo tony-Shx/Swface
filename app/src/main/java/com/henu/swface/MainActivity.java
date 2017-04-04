@@ -18,7 +18,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 		initUI();
 		SharedPreferences sp = getSharedPreferences("login", Context.MODE_PRIVATE);
 		SharedPreferences.Editor editor = sp.edit();
-		editor.putString("username","17839223557");
+		editor.putString("username","17839223558");
 		editor.commit();
 	}
 

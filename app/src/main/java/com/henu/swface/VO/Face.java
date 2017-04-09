@@ -1,5 +1,7 @@
 package com.henu.swface.VO;
 
+import cn.bmob.v3.BmobObject;
+
 /**
  * Created by 宋浩祥 on 2017/3/7.
  */
@@ -7,10 +9,10 @@ package com.henu.swface.VO;
 public class Face {
 
 	private String image_id,request_id,gender,glass,ethnicity,face_token,image_path;
-	private int _id,time_used,age,face_rectangle_width,face_rectangle_top,face_rectangle_left,face_rectangle_height;
-	private float left_normal_glass_eye_open,left_no_glass_eye_close,left_occlusion,left_no_glass_eye_open
-	,left_normal_glass_eye_close,left_dark_glasses,right_normal_glass_eye_open,right_no_glass_eye_close,
-			right_occlusion,right_no_glass_eye_open,right_normal_glass_eye_close,right_dark_glasses,
+	private int id,time_used,age,face_rectangle_width,face_rectangle_top,face_rectangle_left, face_rectangle_high;
+	private float lNormalGlassEyeOpen, lNoGlassEyeClose,left_occlusion, leftNoGlassEyeOpen
+	, lNormalGlassEyeClose,left_dark_glasses, rNormalGlassEyeOpen, rNoGlassEyeClose,
+			right_occlusion, rNoGlassEyeOpen, rNormalGlassEyeClose,right_dark_glasses,
 			headpose_yaw_angle,headpose_pitch_angle,headpose_roll_angle,blurness,smile,facequality;
 
 	public Face() {
@@ -26,24 +28,24 @@ public class Face {
 				", ethnicity='" + ethnicity + '\'' +
 				", face_token='" + face_token + '\'' +
 				", image_path='" + image_path + '\'' +
-				", _id=" + _id +
+				", id=" + id +
 				", time_used=" + time_used +
 				", age=" + age +
 				", face_rectangle_width=" + face_rectangle_width +
 				", face_rectangle_top=" + face_rectangle_top +
 				", face_rectangle_left=" + face_rectangle_left +
-				", face_rectangle_height=" + face_rectangle_height +
-				", left_normal_glass_eye_open=" + left_normal_glass_eye_open +
-				", left_no_glass_eye_close=" + left_no_glass_eye_close +
+				", face_rectangle_high=" + face_rectangle_high +
+				", lNormalGlassEyeOpen=" + lNormalGlassEyeOpen +
+				", lNoGlassEyeClose=" + lNoGlassEyeClose +
 				", left_occlusion=" + left_occlusion +
-				", left_no_glass_eye_open=" + left_no_glass_eye_open +
-				", left_normal_glass_eye_close=" + left_normal_glass_eye_close +
+				", leftNoGlassEyeOpen=" + leftNoGlassEyeOpen +
+				", lNormalGlassEyeClose=" + lNormalGlassEyeClose +
 				", left_dark_glasses=" + left_dark_glasses +
-				", right_normal_glass_eye_open=" + right_normal_glass_eye_open +
-				", right_no_glass_eye_close=" + right_no_glass_eye_close +
+				", rNormalGlassEyeOpen=" + rNormalGlassEyeOpen +
+				", rNoGlassEyeClose=" + rNoGlassEyeClose +
 				", right_occlusion=" + right_occlusion +
-				", right_no_glass_eye_open=" + right_no_glass_eye_open +
-				", right_normal_glass_eye_close=" + right_normal_glass_eye_close +
+				", rNoGlassEyeOpen=" + rNoGlassEyeOpen +
+				", rNormalGlassEyeClose=" + rNormalGlassEyeClose +
 				", right_dark_glasses=" + right_dark_glasses +
 				", headpose_yaw_angle=" + headpose_yaw_angle +
 				", headpose_pitch_angle=" + headpose_pitch_angle +
@@ -54,12 +56,12 @@ public class Face {
 				'}';
 	}
 
-	public int get_id() {
-		return _id;
+	public int getId() {
+		return id;
 	}
 
-	public void set_id(int _id) {
-		this._id = _id;
+	public void setId(int id) {
+		this.id = id;
 	}
 
 
@@ -159,28 +161,28 @@ public class Face {
 		this.face_rectangle_left = face_rectangle_left;
 	}
 
-	public int getFace_rectangle_height() {
-		return face_rectangle_height;
+	public int getFace_rectangle_high() {
+		return face_rectangle_high;
 	}
 
-	public void setFace_rectangle_height(int face_rectangle_height) {
-		this.face_rectangle_height = face_rectangle_height;
+	public void setFace_rectangle_high(int face_rectangle_high) {
+		this.face_rectangle_high = face_rectangle_high;
 	}
 
-	public float getLeft_normal_glass_eye_open() {
-		return left_normal_glass_eye_open;
+	public float getlNormalGlassEyeOpen() {
+		return lNormalGlassEyeOpen;
 	}
 
-	public void setLeft_normal_glass_eye_open(double left_normal_glass_eye_open) {
-		this.left_normal_glass_eye_open = (float) left_normal_glass_eye_open;
+	public void setlNormalGlassEyeOpen(double lNormalGlassEyeOpen) {
+		this.lNormalGlassEyeOpen = (float) lNormalGlassEyeOpen;
 	}
 
-	public float getLeft_no_glass_eye_close() {
-		return left_no_glass_eye_close;
+	public float getlNoGlassEyeClose() {
+		return lNoGlassEyeClose;
 	}
 
-	public void setLeft_no_glass_eye_close(double left_no_glass_eye_close) {
-		this.left_no_glass_eye_close = (float) left_no_glass_eye_close;
+	public void setlNoGlassEyeClose(double lNoGlassEyeClose) {
+		this.lNoGlassEyeClose = (float) lNoGlassEyeClose;
 	}
 
 	public float getLeft_occlusion() {
@@ -191,20 +193,20 @@ public class Face {
 		this.left_occlusion = (float) left_occlusion;
 	}
 
-	public float getLeft_no_glass_eye_open() {
-		return left_no_glass_eye_open;
+	public float getLeftNoGlassEyeOpen() {
+		return leftNoGlassEyeOpen;
 	}
 
-	public void setLeft_no_glass_eye_open(double left_no_glass_eye_open) {
-		this.left_no_glass_eye_open = (float) left_no_glass_eye_open;
+	public void setLeftNoGlassEyeOpen(double leftNoGlassEyeOpen) {
+		this.leftNoGlassEyeOpen = (float) leftNoGlassEyeOpen;
 	}
 
-	public float getLeft_normal_glass_eye_close() {
-		return left_normal_glass_eye_close;
+	public float getlNormalGlassEyeClose() {
+		return lNormalGlassEyeClose;
 	}
 
-	public void setLeft_normal_glass_eye_close(double left_normal_glass_eye_close) {
-		this.left_normal_glass_eye_close = (float) left_normal_glass_eye_close;
+	public void setlNormalGlassEyeClose(double lNormalGlassEyeClose) {
+		this.lNormalGlassEyeClose = (float) lNormalGlassEyeClose;
 	}
 
 	public float getLeft_dark_glasses() {
@@ -215,20 +217,20 @@ public class Face {
 		this.left_dark_glasses = (float) left_dark_glasses;
 	}
 
-	public float getRight_normal_glass_eye_open() {
-		return right_normal_glass_eye_open;
+	public float getrNormalGlassEyeOpen() {
+		return rNormalGlassEyeOpen;
 	}
 
-	public void setRight_normal_glass_eye_open(double right_normal_glass_eye_open) {
-		this.right_normal_glass_eye_open = (float) right_normal_glass_eye_open;
+	public void setrNormalGlassEyeOpen(double rNormalGlassEyeOpen) {
+		this.rNormalGlassEyeOpen = (float) rNormalGlassEyeOpen;
 	}
 
-	public float getRight_no_glass_eye_close() {
-		return right_no_glass_eye_close;
+	public float getrNoGlassEyeClose() {
+		return rNoGlassEyeClose;
 	}
 
-	public void setRight_no_glass_eye_close(double right_no_glass_eye_close) {
-		this.right_no_glass_eye_close = (float) right_no_glass_eye_close;
+	public void setrNoGlassEyeClose(double rNoGlassEyeClose) {
+		this.rNoGlassEyeClose = (float) rNoGlassEyeClose;
 	}
 
 	public float getRight_occlusion() {
@@ -239,20 +241,20 @@ public class Face {
 		this.right_occlusion = (float) right_occlusion;
 	}
 
-	public float getRight_no_glass_eye_open() {
-		return right_no_glass_eye_open;
+	public float getrNoGlassEyeOpen() {
+		return rNoGlassEyeOpen;
 	}
 
-	public void setRight_no_glass_eye_open(double right_no_glass_eye_open) {
-		this.right_no_glass_eye_open = (float) right_no_glass_eye_open;
+	public void setrNoGlassEyeOpen(double rNoGlassEyeOpen) {
+		this.rNoGlassEyeOpen = (float) rNoGlassEyeOpen;
 	}
 
-	public float getRight_normal_glass_eye_close() {
-		return right_normal_glass_eye_close;
+	public float getrNormalGlassEyeClose() {
+		return rNormalGlassEyeClose;
 	}
 
-	public void setRight_normal_glass_eye_close(double right_normal_glass_eye_close) {
-		this.right_normal_glass_eye_close = (float) right_normal_glass_eye_close;
+	public void setrNormalGlassEyeClose(double rNormalGlassEyeClose) {
+		this.rNormalGlassEyeClose = (float) rNormalGlassEyeClose;
 	}
 
 	public float getRight_dark_glasses() {

@@ -3,4 +3,11 @@
     <string name="main_txt_title">Swface人脸识别签到系统</string>
     <string name="button_sign_in">签到打卡</string>
     <string name="button_register">注册新用户</string>
+    <string name="login_textView2_username_text">手机号:</string>
+    <string name="login_editText3_username_hint">11位中国大陆手机号</string>
+    <string name="login_editText3_password_hint">任意字母、数字或特殊符号</string>
+    <string name="login_checkBox_remember_password_text">记住密码</string>
+    <string name="login_textView_tip_text">温馨提示：若手机号尚未注册，将自动为您注册</string>
+    <string name="login_imageButton_login_contentDescription">登录</string>
+    <string name="login_textView4_password_text">密码:</string>
 </resources>

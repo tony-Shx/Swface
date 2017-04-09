@@ -23,6 +23,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.regex.Pattern;
 
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
 public class FaceUtil {
 	public final static int REQUEST_PICTURE_CHOOSE = 1;
 	public final static int  REQUEST_CAMERA_IMAGE = 2;
@@ -264,5 +271,63 @@ public class FaceUtil {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public static Response detectFace(File imageFile,String API_KEY,String API_Secret){
+		OkHttpClient client = new OkHttpClient();
+		//封装请求体
+		RequestBody requestBody = postBodyDetectFace(imageFile,API_KEY,API_Secret);
+		Request request = new Request.Builder().url("https://api-cn.faceplusplus.com/facepp/v3/detect")
+				.post(requestBody).build();
+		Response response = null;
+		try {
+			response = client.newCall(request).execute();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return response;
+	}
+
+	public static Response createFaceSet(String API_KEY,String API_Secret,String display_name,String outer_id,String face_token){
+		OkHttpClient client = new OkHttpClient();
+		//封装请求体
+		RequestBody requestBody = postBodyCreateFaceSet(API_KEY,API_Secret,display_name,outer_id,face_token);
+		Request request = new Request.Builder().url("https://api-cn.faceplusplus.com/facepp/v3/faceset/create")
+				.post(requestBody).build();
+		Response response = null;
+		try {
+			response = client.newCall(request).execute();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return response;
+	}
+
+	private static RequestBody postBodyDetectFace(File file,String API_KEY,String API_Secret) {
+		// 设置请求体
+		MediaType MEDIA_TYPE_JPG = MediaType.parse("image/jpg");
+		RequestBody body = MultipartBody.create(MEDIA_TYPE_JPG, file);
+		MultipartBody.Builder builder = new MultipartBody.Builder();
+		builder.setType(MultipartBody.FORM);
+		builder.addFormDataPart("api_key", API_KEY);
+		builder.addFormDataPart("api_secret", API_Secret);
+		builder.addFormDataPart("image_file", file.getName(), body);
+		//builder.addFormDataPart("return_landmark", "1");
+		builder.addFormDataPart("return_attributes", "gender,age,smiling,headpose,facequality,blur,eyestatus,ethnicity");
+		return builder.build();
+	}
+
+	private static RequestBody postBodyCreateFaceSet(String API_KEY,String API_Secret,String display_name,String outer_id,String face_token) {
+		// 设置请求体
+		MultipartBody.Builder builder = new MultipartBody.Builder();
+		builder.setType(MultipartBody.FORM);
+		builder.addFormDataPart("api_key", API_KEY);
+		builder.addFormDataPart("api_secret", API_Secret);
+		builder.addFormDataPart("display_name", display_name);
+		builder.addFormDataPart("outer_id", outer_id);
+		builder.addFormDataPart("face_tokens", face_token);
+		builder.addFormDataPart("force_merge", "1");
+
+		return builder.build();
 	}
 }

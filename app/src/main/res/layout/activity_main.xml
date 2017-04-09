@@ -9,7 +9,8 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.henu.swface.Activity.MainActivity">
+    android:background="@mipmap/bacground_2"
+    tools:context="com.henu.swface.activity.MainActivity">
 
     <TextView
         android:id="@+id/txt_title"

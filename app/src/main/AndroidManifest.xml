@@ -6,10 +6,6 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     <!-- 获取手机录音机使用权限，听写、识别、语义理解需要用到此权限 -->
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
-    <!-- 读取网络信息状态 -->
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <!-- 获取当前wifi状态 -->
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
     <!-- 允许程序改变网络连接状态 -->
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE"/>
     <!-- 读取手机信息权限 -->
@@ -18,8 +14,18 @@
     <uses-permission android:name="android.permission.READ_CONTACTS"/>
     <!-- 摄相头权限，拍照需要用到 -->
     <uses-permission android:name="android.permission.CAMERA"/>
+    <!--获取GSM（2g）、WCDMA（联通3g）等网络状态的信息  -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!--获取wifi网络状态的信息 -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <!--保持CPU 运转，屏幕和键盘灯有可能是关闭的,用于文件上传和下载 -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!--获取sd卡写的权限，用于文件上传和下载-->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <!--允许读取手机状态 用于创建BmobInstallation-->
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <application
         android:allowBackup="true"
         android:icon="@mipmap/app_icon"
@@ -27,21 +33,19 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name=".Activity.LoginActivity">
+        <activity android:name=".activity.LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity android:name=".Activity.RegisterActivity">
+        <activity android:name=".activity.MainActivity">
         </activity>
-        <activity android:name=".Activity.MainActivity">
+        <activity android:name=".activity.VideoRecogniseActivity">
         </activity>
-        <activity android:name=".Activity.VideoRecogniseActivity">
+        <activity android:name=".activity.SignInActivity">
         </activity>
-        <activity android:name=".Activity.SignInActivity">
-        </activity>
-        <activity android:name=".Activity.DialogInputNameActivity" android:theme="@android:style/Theme.Dialog">
+        <activity android:name=".activity.DialogInputNameActivity" android:theme="@android:style/Theme.Dialog">
         </activity>
     </application>
 

@@ -3,6 +3,7 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 23
     buildToolsVersion "25.0.0"
+    useLibrary 'org.apache.http.legacy'
     defaultConfig {
         applicationId "com.henu.swface"
         minSdkVersion 15
@@ -10,6 +11,9 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    sourceSets {
+        main.jniLibs.srcDirs = ['libs']
     }
     buildTypes {
         release {
@@ -43,4 +47,8 @@ dependencies {
     compile files('libs/okio-1.9.0.jar')
     compile files('libs/retrofit-2.1.0.jar')
     compile files('libs/FaceppSDK.jar')
+    compile files('libs/org.apache.http.legacy.jar')
+    compile files('libs/BmobSDK_3.5.3_20161116.jar')
+    compile files('libs/rxandroid-1.2.0.jar')
+    compile files('libs/rxjava-1.1.6.jar')
 }

@@ -10,6 +10,7 @@ public class FaceSignIn {
     private String face_token;
 
     public FaceSignIn() {
+
     }
 
     public int getTime_used() {

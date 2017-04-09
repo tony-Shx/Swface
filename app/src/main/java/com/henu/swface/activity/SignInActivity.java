@@ -1,4 +1,4 @@
-package com.henu.swface.Activity;
+package com.henu.swface.activity;
 
 import android.Manifest.permission;
 import android.annotation.SuppressLint;
@@ -46,7 +46,7 @@ import com.henu.swface.Datebase.DatabaseAdapter;
 import com.henu.swface.R;
 import com.henu.swface.VO.FaceSignIn;
 import com.henu.swface.VO.SignLog;
-import com.henu.swface.VO.User;
+import com.henu.swface.VO.UserHasSigned;
 import com.henu.swface.Utils.FaceRect;
 import com.henu.swface.Utils.FaceUtil;
 import com.henu.swface.Utils.JSONUtil;
@@ -283,9 +283,9 @@ public class SignInActivity extends Activity {
                     myhandler.sendMessage(message);
                 } else {
                     DatabaseAdapter db = new DatabaseAdapter(getApplicationContext());
-                    User user = db.findUserByFaceToken(faceSignIn.getFace_token());
+                    UserHasSigned userHasSigned = db.findUserByFaceToken(faceSignIn.getFace_token());
                     Message message = new Message();
-                    if (user.getUser_name() != null) {
+                    if (userHasSigned.getUser_name() != null) {
                         message.arg1 = SIGN_IN_SUCCESS;
                         if (faceSignIn.getConfidence() > faceSignIn.getThresholds5()) {
                             Bundle bundle = new Bundle();
@@ -295,7 +295,7 @@ public class SignInActivity extends Activity {
                             bundle.putFloat("thresholds5", faceSignIn.getThresholds5());
                             message.setData(bundle);
                         }
-                        message.obj = user;
+                        message.obj = userHasSigned;
                         myhandler.sendMessage(message);
                     } else {
                         message.arg1 = SIGN_IN_FAILED_NOUSER;
@@ -344,7 +344,7 @@ public class SignInActivity extends Activity {
                 case SIGN_IN_SUCCESS:
                     newdialog.setCancelable(false);
                     newdialog.setTitle("温馨提示：");
-                    final User user = (User) msg.obj;
+                    final UserHasSigned userHasSigned = (UserHasSigned) msg.obj;
                     Bundle date = msg.getData();
                     final float confidence = date.getFloat("confidence");
                     float thresholds3 = date.getFloat("thresholds3");
@@ -354,14 +354,14 @@ public class SignInActivity extends Activity {
                         LayoutInflater inflater = getLayoutInflater();
                         View v= inflater.inflate(R.layout.dialog_sign_in_success,null);
                         TextView username = (TextView) v.findViewById(R.id.dialog_username);
-                        username.setText(user.getUser_name());
+                        username.setText(userHasSigned.getUser_name());
                         newdialog.setView(v);
                         newdialog.setPositiveButton("完成", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 SignLog signLog = new SignLog();
                                 signLog.setTime(System.currentTimeMillis());
-                                signLog.setUser_name(user.getUser_name());
+                                signLog.setUser_name(userHasSigned.getUser_name());
                                 signLog.setConfidence(confidence);
                                 DatabaseAdapter db = new DatabaseAdapter(getApplicationContext());
                                 db.addLog_SignLog(signLog);
@@ -373,14 +373,14 @@ public class SignInActivity extends Activity {
                         LayoutInflater inflater = getLayoutInflater();
                         View v= inflater.inflate(R.layout.dialog_sign_in_success,null);
                         TextView username = (TextView) v.findViewById(R.id.dialog_username);
-                        username.setText(user.getUser_name());
+                        username.setText(userHasSigned.getUser_name());
                         newdialog.setView(v);
                         newdialog.setPositiveButton("完成", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 SignLog signLog = new SignLog();
                                 signLog.setTime(System.currentTimeMillis());
-                                signLog.setUser_name(user.getUser_name());
+                                signLog.setUser_name(userHasSigned.getUser_name());
                                 signLog.setConfidence(confidence);
                                 DatabaseAdapter db = new DatabaseAdapter(getApplicationContext());
                                 db.addLog_SignLog(signLog);

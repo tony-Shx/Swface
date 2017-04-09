@@ -1,16 +1,29 @@
 package com.henu.swface.VO;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+
+import com.henu.swface.activity.VideoRecogniseActivity;
+
+import cn.bmob.v3.BmobObject;
+
 /**
  * Created by Administrator on 2017/3/29.
  */
 
-public class User {
-	private String user_name, face_token1, face_token2, face_token3, face_token4, face_token5;
+public class UserHasSigned extends BmobObject{
+	private String user_name, face_token1, face_token2, face_token3, face_token4, face_token5,telephone;
 
-	public User() {
+	public UserHasSigned(Context context) {
+		SharedPreferences preferences = context.getSharedPreferences("login",Context.MODE_PRIVATE);
+		telephone = preferences.getString("username","default");
 	}
 
-	public User(String user_name, String face_token1, String face_token2, String face_token3, String face_token4, String face_token5) {
+	public String getTelephone() {
+		return telephone;
+	}
+
+	public UserHasSigned(String user_name, String face_token1, String face_token2, String face_token3, String face_token4, String face_token5) {
 		this.user_name = user_name;
 		this.face_token1 = face_token1;
 		this.face_token2 = face_token2;
@@ -69,7 +82,7 @@ public class User {
 
 	@Override
 	public String toString() {
-		return "User{" +
+		return "UserHasSigned{" +
 				"user_name='" + user_name + '\'' +
 				", face_token1='" + face_token1 + '\'' +
 				", face_token2='" + face_token2 + '\'' +

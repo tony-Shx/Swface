@@ -1,4 +1,4 @@
-package com.henu.swface.Activity;
+package com.henu.swface.activity;
 
 import android.content.Context;
 import android.content.Intent;
@@ -18,10 +18,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		initUI();
-		SharedPreferences sp = getSharedPreferences("login", Context.MODE_PRIVATE);
-		SharedPreferences.Editor editor = sp.edit();
-		editor.putString("username","17839223558");
-		editor.commit();
 	}
 
 	private void initUI() {
@@ -29,7 +25,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 		button_sign_in = (Button) this.findViewById(R.id.button_sign_in);
 		button_register.setOnClickListener(this);
 		button_sign_in.setOnClickListener(this);
-
 	}
 
 	@Override

@@ -35,7 +35,7 @@ public class JSONUtil {
 			face.setFace_rectangle_width(faceObject.getJSONObject("face_rectangle").getInt("width"));
 			face.setFace_rectangle_top(faceObject.getJSONObject("face_rectangle").getInt("top"));
 			face.setFace_rectangle_left(faceObject.getJSONObject("face_rectangle").getInt("left"));
-			face.setFace_rectangle_height(faceObject.getJSONObject("face_rectangle").getInt("height"));
+			face.setFace_rectangle_high(faceObject.getJSONObject("face_rectangle").getInt("height"));
 			JSONObject attributesObject = faceObject.getJSONObject("attributes");
 			face.setGender(attributesObject.getJSONObject("gender").get("value").toString());
 			face.setAge(attributesObject.getJSONObject("age").getInt("value"));
@@ -48,17 +48,17 @@ public class JSONUtil {
 			face.setEthnicity(attributesObject.getJSONObject("ethnicity").get("value").toString());
 			face.setFace_token(faceObject.get("face_token").toString());
 			JSONObject eyestatusObject = attributesObject.getJSONObject("eyestatus");
-			face.setLeft_normal_glass_eye_open(eyestatusObject.getJSONObject("left_eye_status").getDouble("normal_glass_eye_open"));
-			face.setLeft_no_glass_eye_close(eyestatusObject.getJSONObject("left_eye_status").getDouble("no_glass_eye_close"));
+			face.setlNormalGlassEyeOpen(eyestatusObject.getJSONObject("left_eye_status").getDouble("normal_glass_eye_open"));
+			face.setlNoGlassEyeClose(eyestatusObject.getJSONObject("left_eye_status").getDouble("no_glass_eye_close"));
 			face.setLeft_occlusion(eyestatusObject.getJSONObject("left_eye_status").getDouble("occlusion"));
-			face.setLeft_no_glass_eye_open(eyestatusObject.getJSONObject("left_eye_status").getDouble("no_glass_eye_open"));
-			face.setLeft_normal_glass_eye_close(eyestatusObject.getJSONObject("left_eye_status").getDouble("normal_glass_eye_close"));
+			face.setLeftNoGlassEyeOpen(eyestatusObject.getJSONObject("left_eye_status").getDouble("no_glass_eye_open"));
+			face.setlNormalGlassEyeClose(eyestatusObject.getJSONObject("left_eye_status").getDouble("normal_glass_eye_close"));
 			face.setLeft_dark_glasses(eyestatusObject.getJSONObject("left_eye_status").getDouble("dark_glasses"));
-			face.setRight_normal_glass_eye_open(eyestatusObject.getJSONObject("right_eye_status").getDouble("normal_glass_eye_open"));
-			face.setRight_no_glass_eye_close(eyestatusObject.getJSONObject("right_eye_status").getDouble("no_glass_eye_close"));
+			face.setrNormalGlassEyeOpen(eyestatusObject.getJSONObject("right_eye_status").getDouble("normal_glass_eye_open"));
+			face.setrNoGlassEyeClose(eyestatusObject.getJSONObject("right_eye_status").getDouble("no_glass_eye_close"));
 			face.setRight_occlusion(eyestatusObject.getJSONObject("right_eye_status").getDouble("occlusion"));
-			face.setRight_no_glass_eye_open(eyestatusObject.getJSONObject("right_eye_status").getDouble("no_glass_eye_open"));
-			face.setRight_normal_glass_eye_close(eyestatusObject.getJSONObject("right_eye_status").getDouble("normal_glass_eye_close"));
+			face.setrNoGlassEyeOpen(eyestatusObject.getJSONObject("right_eye_status").getDouble("no_glass_eye_open"));
+			face.setrNormalGlassEyeClose(eyestatusObject.getJSONObject("right_eye_status").getDouble("normal_glass_eye_close"));
 			face.setRight_dark_glasses(eyestatusObject.getJSONObject("right_eye_status").getDouble("dark_glasses"));
 			face.setBlurness(attributesObject.getJSONObject("blur").getJSONObject("blurness").getDouble("value"));
 		} catch (JSONException e) {

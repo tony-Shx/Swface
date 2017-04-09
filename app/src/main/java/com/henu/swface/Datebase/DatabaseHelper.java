@@ -12,7 +12,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DB_NAME = "Swface.db";
     private static final int version = 1;
-    private static final String CREATE_TABLE_FACES = "CREATE TABLE IF NOT EXISTS Faces(_id INTEGER PRIMARY KEY AUTOINCREMENT," +
+    private static final String CREATE_TABLE_FACES = "CREATE TABLE IF NOT EXISTS Faces(id INTEGER PRIMARY KEY AUTOINCREMENT," +
             "image_id TEXT,request_id TEXT,gender TEXT,glass TEXT,ethnicity TEXT," +
             "time_used INTEGER,age INTEGER,face_rectangle_width INTEGER,face_rectangle_top INTEGER," +
             "face_rectangle_left INTEGER,face_rectangle_height INTEGER," +
@@ -23,10 +23,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             "headpose_yaw_angle REAL,headpose_pitch_angle REAL,headpose_roll_angle REAL,blurness REAL," +
             "smile REAL,facequality REAL,face_token TEXT,image_path TEXT)";
     private static final String DROP_TABLE_FACES = "DROP TABLE IF EXISTS Faces";
-    private static final String CREATE_TABLE_USER = "CREATE TABLE IF NOT EXISTS User(_id INTEGER PRIMARY KEY AUTOINCREMENT," +
+    private static final String CREATE_TABLE_USER = "CREATE TABLE IF NOT EXISTS UserHasSigned(id INTEGER PRIMARY KEY AUTOINCREMENT," +
             "user_name TEXT,face_token1 TEXT,face_token2 TEXT,face_token3 TEXT,face_token4 TEXT,face_token5 TEXT)";
-    private static final String DROP_TABLE_USER = "DROP TABLE IF EXISTS User";
-    private static final String CREATE_TABLE_SIGNLOG = "CREATE TABLE IF NOT EXISTS SignLog(_id INTEGER PRIMARY KEY AUTOINCREMENT," +
+    private static final String DROP_TABLE_USER = "DROP TABLE IF EXISTS UserHasSigned";
+    private static final String CREATE_TABLE_SIGNLOG = "CREATE TABLE IF NOT EXISTS SignLog(id INTEGER PRIMARY KEY AUTOINCREMENT," +
             "user_name TEXT,confidence REAL,time NUMERIC)";
     private static final String DROP_TABLE_SIGNLOG = "DROP TABLE IF EXISTS SignLog";
 

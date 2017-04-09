@@ -10,7 +10,7 @@ public final class UserMetaData {
 	public UserMetaData() {
 	}
 	public static abstract class UserTable implements BaseColumns{
-		public static final String TABLE_NAME = "User";
+		public static final String TABLE_NAME = "UserHasSigned";
 		public static final String USER_NAME = "user_name";
 		public static final String FACE_TOKEN1 = "face_token1";
 		public static final String FACE_TOKEN2 = "face_token2";

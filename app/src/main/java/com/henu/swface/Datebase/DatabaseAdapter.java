@@ -169,6 +169,7 @@ public class DatabaseAdapter {
 
 
     public void addUser_User(User user) {
+
         SQLiteDatabase db = databaseHelper.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(UserMetaData.UserTable.USER_NAME, user.getUser_name());

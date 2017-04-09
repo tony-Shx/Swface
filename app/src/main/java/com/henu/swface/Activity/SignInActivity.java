@@ -1,11 +1,10 @@
-package com.henu.swface;
+package com.henu.swface.Activity;
 
 import android.Manifest.permission;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -36,7 +35,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.widget.Button;
-import android.widget.ProgressBar;
 import android.widget.RadioGroup;
 import android.widget.RadioGroup.OnCheckedChangeListener;
 import android.widget.RelativeLayout;
@@ -45,29 +43,22 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.henu.swface.Datebase.DatabaseAdapter;
-import com.henu.swface.Datebase.DatabaseHelper;
-import com.henu.swface.VO.Face;
+import com.henu.swface.R;
 import com.henu.swface.VO.FaceSignIn;
 import com.henu.swface.VO.SignLog;
 import com.henu.swface.VO.User;
-import com.henu.swface.util.FaceRect;
-import com.henu.swface.util.FaceUtil;
-import com.henu.swface.util.JSONUtil;
-import com.henu.swface.util.ParseResult;
+import com.henu.swface.Utils.FaceRect;
+import com.henu.swface.Utils.FaceUtil;
+import com.henu.swface.Utils.JSONUtil;
+import com.henu.swface.Utils.ParseResult;
 import com.iflytek.cloud.FaceDetector;
 import com.iflytek.cloud.SpeechUtility;
 import com.iflytek.cloud.util.Accelerometer;
-import com.megvii.cloud.http.CommonOperate;
-import com.megvii.cloud.http.FaceOperate;
-import com.megvii.cloud.http.FaceSetOperate;
 
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;

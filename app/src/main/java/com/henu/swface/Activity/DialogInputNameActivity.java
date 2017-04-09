@@ -1,4 +1,4 @@
-package com.henu.swface;
+package com.henu.swface.Activity;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -8,6 +8,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+
+import com.henu.swface.R;
 
 import java.io.File;
 import java.io.FileOutputStream;

@@ -1,4 +1,4 @@
-package com.henu.swface.util;
+package com.henu.swface.Utils;
 
 import android.app.Activity;
 import android.content.Context;
@@ -249,7 +249,6 @@ public class FaceUtil {
 	
 	/**
 	 * 保存Bitmap至本地
-	 * @param Bitmap
 	 */
 	public static void saveBitmapToFile(Context context, Bitmap bmp){
 		String file_path = getImagePath(context);

@@ -239,7 +239,7 @@ public class DatabaseAdapter {
 			}
 			db.insert(UserMetaData.UserTable.TABLE_NAME, UserMetaData.UserTable.USER_NAME, contentValues);
 			db.close();
-			Log.i("addUser_User: ", "Success!");
+			Log.i(TAG,"addUser_User: Success!");
 			return true;
 		} else {
 			return false;

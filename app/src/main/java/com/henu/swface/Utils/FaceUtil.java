@@ -245,8 +245,8 @@ public class FaceUtil {
 		//旋转图片
 		Bitmap mBitmap1 = Bitmap.createBitmap(bitmap_source, 0, 0, bitmap_source.getWidth(), bitmap_source.getHeight(), matrix, true);
 		//裁剪图片压缩图片大小为尺寸1200*900，便于传输存储
-		int STORAGE_WIDTH = 900;
-		int STORAGE_HEIGHT = 1200;
+		int STORAGE_WIDTH = 600;
+		int STORAGE_HEIGHT = 800;
 		return mBitmap1.createScaledBitmap(mBitmap1, STORAGE_WIDTH, STORAGE_HEIGHT, false);
 	}
 	

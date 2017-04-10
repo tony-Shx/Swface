@@ -350,7 +350,9 @@ public class SignInActivity extends Activity {
                         LayoutInflater inflater = getLayoutInflater();
                         View v= inflater.inflate(R.layout.dialog_sign_in_success,null);
                         TextView username = (TextView) v.findViewById(R.id.dialog_username);
+                        TextView dialog_confidence = (TextView) v.findViewById(R.id.dialog_confidence);
                         username.setText(userHasSigned.getUser_name());
+                        dialog_confidence.setText(Float.toString(confidence));
                         newdialog.setView(v);
                         newdialog.setPositiveButton("完成", new DialogInterface.OnClickListener() {
                             @Override

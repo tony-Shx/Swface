@@ -79,6 +79,7 @@ public class SignInActivity extends Activity {
     private final static int SIGN_IN_FAILED_IOEXCEPTION = 0x201;
     private final static int SIGN_IN_FAILED_FILENOTFIND = 0x202;
     private final static int SIGN_IN_FAILED_NOUSER = 0x203;
+    private final static int ADDUSERSUCCESS = 0x204;
     private final static String TAG = SignInActivity.class.getSimpleName();
     private SurfaceView mPreviewSurface;
     private SurfaceView mFaceSurface;
@@ -88,9 +89,7 @@ public class SignInActivity extends Activity {
     // Camera nv21格式预览帧的尺寸，默认设置640*480
     private int PREVIEW_WIDTH = 640;
     private int PREVIEW_HEIGHT = 480;
-    //照片存储宽高
-    private int STORAGE_WIDTH = 900;
-    private int STORAGE_HEIGHT = 1200;
+
     // 预览帧数据存储数组和缓存数组
     private byte[] nv21;
     private byte[] buffer;
@@ -239,7 +238,7 @@ public class SignInActivity extends Activity {
                                     Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) +
                                             "/" + filename);
                             FileOutputStream fos = new FileOutputStream(imageFile);
-                            Bitmap mBitmap = compressPicture(data);
+                            Bitmap mBitmap = FaceUtil.compressPicture(data);
                             BufferedOutputStream bos = new BufferedOutputStream(fos);
                             mBitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
                             fos.flush();
@@ -260,16 +259,19 @@ public class SignInActivity extends Activity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                OkHttpClient client = new OkHttpClient();
-                RequestBody requestBody = postBody(imageFile);
-                Request request = new Request.Builder().url("https://api-cn.faceplusplus.com/facepp/v3/search")
-                        .post(requestBody).build();
-                Response response = null;
+
                 FaceSignIn faceSignIn = null;
                 try {
-                    response = client.newCall(request).execute();
+                    Response response = FaceUtil.searchFaceset(getApplicationContext(),API_KEY,API_Secret,imageFile);
+                    if(response!=null&&response.code()==200){
                     JSONUtil jsonUtil = new JSONUtil();
                     faceSignIn = jsonUtil.parseSearchFaceJSON(response.body().string());
+                    }else{
+                        Message message = new Message();
+                        message.arg1 = SIGN_IN_FAILED_IOEXCEPTION;
+                        myhandler.sendMessage(message);
+                        return;
+                    }
                 } catch (Exception e) {
                     Log.e(TAG, "searchByOuterId: " + e.getMessage());
                     Message message = new Message();
@@ -283,7 +285,7 @@ public class SignInActivity extends Activity {
                     myhandler.sendMessage(message);
                 } else {
                     DatabaseAdapter db = new DatabaseAdapter(getApplicationContext());
-                    UserHasSigned userHasSigned = db.findUserByFaceToken(faceSignIn.getFace_token());
+                    UserHasSigned userHasSigned = db.findUserByFaceToken(faceSignIn,myhandler);
                     Message message = new Message();
                     if (userHasSigned.getUser_name() != null) {
                         message.arg1 = SIGN_IN_SUCCESS;
@@ -297,9 +299,6 @@ public class SignInActivity extends Activity {
                         }
                         message.obj = userHasSigned;
                         myhandler.sendMessage(message);
-                    } else {
-                        message.arg1 = SIGN_IN_FAILED_NOUSER;
-                        myhandler.sendMessage(message);
                     }
                 }
             }
@@ -307,34 +306,10 @@ public class SignInActivity extends Activity {
 
     }
 
-    protected RequestBody postBody(File file) {
-        // 设置请求体
-        MediaType MEDIA_TYPE_JPG = MediaType.parse("image/jpg");
-        RequestBody body = MultipartBody.create(MEDIA_TYPE_JPG, file);
-        MultipartBody.Builder builder = new MultipartBody.Builder();
-        builder.setType(MultipartBody.FORM);
-        //这里是 封装上传图片参数
-        builder.addFormDataPart("api_key", API_KEY);
-        builder.addFormDataPart("api_secret", API_Secret);
-        builder.addFormDataPart("image_file", file.getName(), body);
-        SharedPreferences sp = getSharedPreferences("login", Context.MODE_PRIVATE);
-        String outerId = sp.getString("username", "default");
-        builder.addFormDataPart("outer_id", outerId);
-        return builder.build();
-    }
 
 
-    private Bitmap compressPicture(byte[] data) {
-        //获取拍到的图片Bitmap
-        Bitmap bitmap_source = BitmapFactory.decodeByteArray(data, 0, data.length);
-        // 根据旋转角度，生成旋转矩阵
-        Matrix matrix = new Matrix();
-        matrix.postRotate(270);
-        //旋转图片
-        Bitmap mBitmap1 = Bitmap.createBitmap(bitmap_source, 0, 0, bitmap_source.getWidth(), bitmap_source.getHeight(), matrix, true);
-        //裁剪图片压缩图片大小为尺寸1200*900，便于传输存储
-        return mBitmap1.createScaledBitmap(mBitmap1, STORAGE_WIDTH, STORAGE_HEIGHT, false);
-    }
+
+
 
     private Handler myhandler = new Handler() {
         @Override
@@ -354,7 +329,9 @@ public class SignInActivity extends Activity {
                         LayoutInflater inflater = getLayoutInflater();
                         View v= inflater.inflate(R.layout.dialog_sign_in_success,null);
                         TextView username = (TextView) v.findViewById(R.id.dialog_username);
+                        TextView dialog_confidence = (TextView) v.findViewById(R.id.dialog_confidence);
                         username.setText(userHasSigned.getUser_name());
+                        dialog_confidence.setText(Float.toString(confidence));
                         newdialog.setView(v);
                         newdialog.setPositiveButton("完成", new DialogInterface.OnClickListener() {
                             @Override
@@ -452,6 +429,9 @@ public class SignInActivity extends Activity {
                     });
                     dialog.cancel();
                     newdialog.show();
+                    break;
+                case ADDUSERSUCCESS:
+
                     break;
                 default:
                     break;

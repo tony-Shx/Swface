@@ -3,7 +3,9 @@ package com.henu.swface.Utils;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
@@ -34,7 +36,7 @@ public class FaceUtil {
 	public final static int REQUEST_PICTURE_CHOOSE = 1;
 	public final static int  REQUEST_CAMERA_IMAGE = 2;
 	public final static int REQUEST_CROP_IMAGE = 3;
-	
+
 	/***
 	 * 裁剪图片
 	 * @param activity Activity
@@ -233,6 +235,20 @@ public class FaceUtil {
 		p.y = x;
 		return p;
 	}
+
+	public static Bitmap compressPicture(byte[] data) {
+		//获取拍到的图片Bitmap
+		Bitmap bitmap_source = BitmapFactory.decodeByteArray(data, 0, data.length);
+		// 根据旋转角度，生成旋转矩阵
+		Matrix matrix = new Matrix();
+		matrix.postRotate(270);
+		//旋转图片
+		Bitmap mBitmap1 = Bitmap.createBitmap(bitmap_source, 0, 0, bitmap_source.getWidth(), bitmap_source.getHeight(), matrix, true);
+		//裁剪图片压缩图片大小为尺寸1200*900，便于传输存储
+		int STORAGE_WIDTH = 900;
+		int STORAGE_HEIGHT = 1200;
+		return mBitmap1.createScaledBitmap(mBitmap1, STORAGE_WIDTH, STORAGE_HEIGHT, false);
+	}
 	
 	public static int getNumCores() {
 	    class CpuFilter implements FileFilter {
@@ -303,6 +319,29 @@ public class FaceUtil {
 		return response;
 	}
 
+	public static Response searchFaceset(Context context,String API_KEY,String API_Secret,File imageFile){
+		OkHttpClient client = new OkHttpClient();
+		RequestBody requestBody = postBodySearchFaceSet(context,API_KEY,API_Secret,imageFile);
+		Request request = new Request.Builder().url("https://api-cn.faceplusplus.com/facepp/v3/search")
+				.post(requestBody).build();
+		Response response = null;
+		try {
+			int attemp = 0;
+			do {
+				try {
+					Thread.sleep(50);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				response = client.newCall(request).execute();
+				attemp++;
+			}while (response.code()!=200&&attemp<5);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return response;
+	}
+
 	private static RequestBody postBodyDetectFace(File file,String API_KEY,String API_Secret) {
 		// 设置请求体
 		MediaType MEDIA_TYPE_JPG = MediaType.parse("image/jpg");
@@ -327,7 +366,22 @@ public class FaceUtil {
 		builder.addFormDataPart("outer_id", outer_id);
 		builder.addFormDataPart("face_tokens", face_token);
 		builder.addFormDataPart("force_merge", "1");
+		return builder.build();
+	}
 
+	protected static RequestBody postBodySearchFaceSet(Context context,String API_KEY,String API_Secret,File file) {
+		// 设置请求体
+		MediaType MEDIA_TYPE_JPG = MediaType.parse("image/jpg");
+		RequestBody body = MultipartBody.create(MEDIA_TYPE_JPG, file);
+		MultipartBody.Builder builder = new MultipartBody.Builder();
+		builder.setType(MultipartBody.FORM);
+		//这里是 封装上传图片参数
+		builder.addFormDataPart("api_key", API_KEY);
+		builder.addFormDataPart("api_secret", API_Secret);
+		builder.addFormDataPart("image_file", file.getName(), body);
+		SharedPreferences sp = context.getSharedPreferences("login", Context.MODE_PRIVATE);
+		String outerId = sp.getString("username", "default");
+		builder.addFormDataPart("outer_id", outerId);
 		return builder.build();
 	}
 }

@@ -384,8 +384,13 @@ public class VideoRecogniseActivity extends Activity {
 						userHasSigned.setUser_name(username);
 						userHasSigned.setFace_token1(face.getFace_token());
 						//上传图片到BMOB数据库
-						updateImageFile(newFile,userHasSigned,db);
-
+						boolean result = updateImageFile(newFile,userHasSigned,db);
+						if(!result){
+							Message message = new Message();
+							message.arg1 = DETECT_FAILED_IO_EXCEPTION;
+							myhandler.sendMessage(message);
+							return;
+						}
 						ArrayList<Face> face_list = db.findAll_Faces();
 						ArrayList<UserHasSigned> user_HasSigned_face = db.findAllUser_User();
 						for (Face face1 : face_list) {
@@ -473,21 +478,25 @@ public class VideoRecogniseActivity extends Activity {
 		}
 	}
 
-	private void updateImageFile(File imageFile, final UserHasSigned userHasSigned, final DatabaseAdapter db) {
+	private boolean updateImageFile(File imageFile, final UserHasSigned userHasSigned, final DatabaseAdapter db) {
 		final BmobFile file = new BmobFile(imageFile);
+		final boolean[] updateSuccess = {false};
 		file.uploadblock(new UploadFileListener() {
 			@Override
 			public void done(BmobException e) {
 				if(e==null){
 					Log.i(TAG, "file.uploadblock:success ");
 					userHasSigned.setFace_url1(file.getFileUrl());
-					db.addUser_User(userHasSigned);
+					if(db.addUser_User(userHasSigned)){
+						updateSuccess[0] = true;
+					}else{
+						updateSuccess[0] = false;
+					}
 				}else{
 					Log.e(TAG, "file.uploadblock:failed ",e );
 					Message message = new Message();
 					message.arg1 = DETECT_FAILED_IO_EXCEPTION;
 					myhandler.sendMessage(message);
-					return;
 				}
 			}
 
@@ -498,6 +507,16 @@ public class VideoRecogniseActivity extends Activity {
 				fileUploadProgress = value;
 			}
 		});
+		int attemp = 0;
+		while (!updateSuccess[0]&&attemp<150){
+			attemp++;
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		return updateSuccess[0];
 	}
 
 

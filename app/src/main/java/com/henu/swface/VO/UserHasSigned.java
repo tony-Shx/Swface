@@ -12,7 +12,7 @@ import cn.bmob.v3.BmobObject;
  */
 
 public class UserHasSigned extends BmobObject{
-	private String user_name, face_token1, face_token2, face_token3, face_token4, face_token5,telephone;
+	private String user_name, face_token1, face_token2, face_token3, face_token4, face_token5,telephone,face_url1,face_url2,face_url3,face_url4,face_url5;
 
 	public UserHasSigned(Context context) {
 		SharedPreferences preferences = context.getSharedPreferences("login",Context.MODE_PRIVATE);
@@ -30,6 +30,46 @@ public class UserHasSigned extends BmobObject{
 		this.face_token3 = face_token3;
 		this.face_token4 = face_token4;
 		this.face_token5 = face_token5;
+	}
+
+	public String getFace_url1() {
+		return face_url1;
+	}
+
+	public void setFace_url1(String face_url1) {
+		this.face_url1 = face_url1;
+	}
+
+	public String getFace_url2() {
+		return face_url2;
+	}
+
+	public void setFace_url2(String face_url2) {
+		this.face_url2 = face_url2;
+	}
+
+	public String getFace_url3() {
+		return face_url3;
+	}
+
+	public void setFace_url3(String face_url3) {
+		this.face_url3 = face_url3;
+	}
+
+	public String getFace_url4() {
+		return face_url4;
+	}
+
+	public void setFace_url4(String face_url4) {
+		this.face_url4 = face_url4;
+	}
+
+	public String getFace_url5() {
+		return face_url5;
+	}
+
+	public void setFace_url5(String face_url5) {
+		this.face_url5 = face_url5;
 	}
 
 	public String getUser_name() {

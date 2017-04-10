@@ -2,6 +2,7 @@ package com.henu.swface.Datebase;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
@@ -182,6 +183,10 @@ public class DatabaseAdapter {
 			public void done(String s, BmobException e) {
 				if (e == null) {
 					Log.i(TAG, "userHasSigned.save: success");
+					SharedPreferences sharedPreferences = context.getSharedPreferences("detectFace",Context.MODE_PRIVATE);
+					SharedPreferences.Editor editor = sharedPreferences.edit();
+					editor.putString("lastUpdateObjectId",s);
+					editor.commit();
 					SQLiteDatabase db = databaseHelper.getWritableDatabase();
 					ContentValues contentValues = new ContentValues();
 					contentValues.put(UserMetaData.UserTable.USER_NAME, userHasSigned.getUser_name());

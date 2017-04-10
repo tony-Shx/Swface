@@ -43,6 +43,7 @@ import android.widget.RelativeLayout.LayoutParams;
 import android.widget.Toast;
 
 import com.henu.swface.Datebase.DatabaseAdapter;
+import com.henu.swface.Datebase.DatabaseHelper;
 import com.henu.swface.R;
 import com.henu.swface.VO.Face;
 import com.henu.swface.VO.UserHasSigned;
@@ -61,6 +62,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import cn.bmob.v3.datatype.BmobFile;
+import cn.bmob.v3.exception.BmobException;
+import cn.bmob.v3.listener.UpdateListener;
+import cn.bmob.v3.listener.UploadFileListener;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
@@ -79,6 +84,8 @@ public class VideoRecogniseActivity extends Activity {
 	private final static int DETECT_SUCCESS = 0X110;
 	private final static int DETECT_FAILED_IO_EXCEPTION = 0X111;
 	private final static int DETECT_FAILED_NO_FACE = 0X112;
+	private final static int DETECT_FAILED_LIMIT_EXCEEDED = 0X113;
+	private static int fileUploadProgress = 0;
 	private final static String TAG = VideoRecogniseActivity.class.getSimpleName();
 	private SurfaceView mPreviewSurface;
 	private SurfaceView mFaceSurface;
@@ -273,13 +280,8 @@ public class VideoRecogniseActivity extends Activity {
 		if (resultCode == 1) {
 			File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + "/waitForRename.jpg");
 			if (file.exists()) {
-				File newFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + "/" + username + "_1.jpg");
-				if (!file.renameTo(newFile)) {
-					showNormalDialog(null, "文件重命名失败，请检查磁盘空间是否充足？", false, null, true);
-					return;
-				}
 				showNormalDialog(null, "正在注册新人脸，请保持网络通畅...", false, new ProgressBar(this), false);
-				RegisterFace(newFile, username);
+				RegisterFace(file, username);
 			} else {
 				Toast.makeText(this, "错误代码-1，拍照文件保存失败，请检查磁盘空间！", Toast.LENGTH_LONG).show();
 			}
@@ -329,6 +331,10 @@ public class VideoRecogniseActivity extends Activity {
 					});
 					dialog.cancel();
 					newdialog.show();
+					break;
+				case  DETECT_FAILED_LIMIT_EXCEEDED:
+					showNormalDialog("温馨提示：", "注册失败！\n当前服务器压力过大，请稍后再试！！", false, null, true);
+					break;
 				default:
 					break;
 			}
@@ -340,45 +346,46 @@ public class VideoRecogniseActivity extends Activity {
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
-				try {
 					Response response = FaceUtil.detectFace(imageFile, API_KEY, API_Secret);
 					Face face = null;
-					if (response != null) {
-						String JSON = response.body().string();
-						JSONUtil jsonUtil = new JSONUtil();
-						face = jsonUtil.parseDetectFaceJSON(JSON);
+					int attempt = 0;
+					while (response.code()!=200&&attempt<5){
+						response = FaceUtil.detectFace(imageFile, API_KEY, API_Secret);
+						attempt++;
+						try {
+							Thread.sleep(50);
+						} catch (InterruptedException e) {
+							Log.e(TAG, "Thread.sleep: ", e);
+							e.printStackTrace();
+						}
 					}
+				String JSON = null;
+				try {
+					JSON = response.body().string();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				JSONUtil jsonUtil = new JSONUtil();
+					face = jsonUtil.parseDetectFaceJSON(JSON);
 					if (face == null) {
 						Message message = new Message();
 						message.arg1 = DETECT_FAILED_NO_FACE;
 						myhandler.sendMessage(message);
 					} else {
-						face.setImage_path(imageFile.getAbsolutePath());
+						File newFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + "/" + face.getFace_token() + ".jpg");
+						if (!imageFile.renameTo(newFile)) {
+							showNormalDialog(null, "文件重命名失败，请检查磁盘空间是否充足？", false, null, true);
+							return;
+						}
+						face.setImage_path(newFile.getAbsolutePath());
 						DatabaseAdapter db = new DatabaseAdapter(getApplicationContext());
 						db.addFace_Faces(face);
 						UserHasSigned userHasSigned = new UserHasSigned(VideoRecogniseActivity.this);
 						userHasSigned.setUser_name(username);
 						userHasSigned.setFace_token1(face.getFace_token());
-						db.addUser_User(userHasSigned);
-						SharedPreferences sp = getSharedPreferences("login", Context.MODE_PRIVATE);
-						String outerId = sp.getString("username", "default");
-						try {
-							response = FaceUtil.createFaceSet(API_KEY, API_Secret, "default", outerId, face.getFace_token());
-							if (response.code() == 200) {
-								String JSON2 = response.body().string();
-								Log.i(TAG, "faceSetOperate.createFaceSet(): " + JSON2);
-							} else {
-								Log.e(TAG, "faceSetOperate.createFaceSet(): " + response.code());
-								throw new Exception();
-							}
-						} catch (Exception e) {
-							e.printStackTrace();
-							Log.e(TAG, "faceSetOperate.createFaceSet(): ", e);
-							Message message = new Message();
-							message.arg1 = DETECT_FAILED_IO_EXCEPTION;
-							myhandler.sendMessage(message);
-							return;
-						}
+						//上传图片到BMOB数据库
+						updateImageFile(newFile,userHasSigned,db);
+
 						ArrayList<Face> face_list = db.findAll_Faces();
 						ArrayList<UserHasSigned> user_HasSigned_face = db.findAllUser_User();
 						for (Face face1 : face_list) {
@@ -387,18 +394,110 @@ public class VideoRecogniseActivity extends Activity {
 						for (UserHasSigned userHasSigned1 : user_HasSigned_face) {
 							Log.v("userList:", userHasSigned1.toString());
 						}
-						Message message = new Message();
-						message.arg1 = DETECT_SUCCESS;
-						myhandler.sendMessage(message);
+						attempt = 0;
+						while (fileUploadProgress!=100&&attempt<150){
+							attempt++;
+							try {
+								Thread.sleep(100);
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							}
+						}
+						if(fileUploadProgress==100){
+							//创建FaceSet集合，并将人脸加入集合
+							SharedPreferences sp = getSharedPreferences("login", Context.MODE_PRIVATE);
+							String outerId = sp.getString("username", "default");
+								attempt = 0;
+								while (response.code() != 200&&attempt<5){
+									response = FaceUtil.createFaceSet(API_KEY, API_Secret, "default", outerId, face.getFace_token());
+									String JSON2 = null;
+									try {
+										JSON2 = response.body().string();
+									} catch (IOException e) {
+										e.printStackTrace();
+									}
+									Log.i(TAG, "faceSetOperate.createFaceSet(): " + JSON2);
+									attempt++;
+									try {
+										Thread.sleep(50);
+									} catch (InterruptedException e) {
+										e.printStackTrace();
+									}
+								}
+								if(response.code()==200){
+									SharedPreferences preferences = getSharedPreferences("detectFace",Context.MODE_PRIVATE);
+									SharedPreferences.Editor editor =  preferences.edit();
+									editor.remove("lastUpdateObjectId");
+									editor.commit();
+									Message message = new Message();
+									message.arg1 = DETECT_SUCCESS;
+									myhandler.sendMessage(message);
+								}else{
+									clearBMOBDate();
+								}
+						}else{
+							Message message = new Message();
+							message.arg1 = DETECT_FAILED_IO_EXCEPTION;
+							myhandler.sendMessage(message);
+						}
 					}
-				} catch (IOException e) {
+
+			}
+		}).start();
+	}
+
+	private void clearBMOBDate() {
+		SharedPreferences preferences = getSharedPreferences("detectFace",Context.MODE_PRIVATE);
+		String objectId = preferences.getString("lastUpdateObjectId",null);
+		if(objectId!=null){
+			UserHasSigned userHasSigned = new UserHasSigned(this);
+			userHasSigned.setObjectId(objectId);
+			userHasSigned.delete(new UpdateListener() {
+				@Override
+				public void done(BmobException e) {
+				  if(e==null){
+					  Message message = new Message();
+					  message.arg1 = DETECT_FAILED_LIMIT_EXCEEDED;
+					  myhandler.sendMessage(message);
+				  }else{
+					  Message message = new Message();
+					  message.arg1 = DETECT_FAILED_IO_EXCEPTION;
+					  myhandler.sendMessage(message);
+				  }
+				}
+			});
+		}else{
+			Message message = new Message();
+			message.arg1 = DETECT_FAILED_LIMIT_EXCEEDED;
+			myhandler.sendMessage(message);
+		}
+	}
+
+	private void updateImageFile(File imageFile, final UserHasSigned userHasSigned, final DatabaseAdapter db) {
+		final BmobFile file = new BmobFile(imageFile);
+		file.uploadblock(new UploadFileListener() {
+			@Override
+			public void done(BmobException e) {
+				if(e==null){
+					Log.i(TAG, "file.uploadblock:success ");
+					userHasSigned.setFace_url1(file.getFileUrl());
+					db.addUser_User(userHasSigned);
+				}else{
+					Log.e(TAG, "file.uploadblock:failed ",e );
 					Message message = new Message();
 					message.arg1 = DETECT_FAILED_IO_EXCEPTION;
 					myhandler.sendMessage(message);
-					e.printStackTrace();
+					return;
 				}
 			}
-		}).start();
+
+			@Override
+			public void onProgress(Integer value) {
+				super.onProgress(value);
+				Log.i(TAG, "onProgress: "+value);
+				fileUploadProgress = value;
+			}
+		});
 	}
 
 

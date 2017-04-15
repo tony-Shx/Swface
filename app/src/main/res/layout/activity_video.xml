@@ -12,9 +12,15 @@
 	    android:id="@+id/sfv_face"
 	    android:layout_width="match_parent"
 	    android:layout_height="match_parent"/>
-	
 
-    
+
+	<ImageView
+		android:layout_width="60dp"
+		android:layout_height="60dp"
+		android:id="@+id/testImageView"
+		android:layout_above="@+id/align_mode"
+		android:layout_alignParentLeft="true"
+		android:layout_alignParentStart="true"/>
     <RadioGroup 
         android:id="@+id/align_mode"
         android:layout_width="match_parent"

@@ -15,10 +15,14 @@ import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
+import android.graphics.Rect;
+import android.graphics.YuvImage;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
 import android.hardware.Camera.Parameters;
 import android.hardware.Camera.PreviewCallback;
+import android.hardware.camera2.CameraDevice;
+import android.hardware.camera2.CameraManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -35,6 +39,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RadioGroup;
 import android.widget.RadioGroup.OnCheckedChangeListener;
@@ -57,6 +62,7 @@ import com.iflytek.cloud.util.Accelerometer;
 import com.megvii.cloud.http.FaceSetOperate;
 
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -112,6 +118,7 @@ public class VideoRecogniseActivity extends Activity {
 	private long mLastClickTime;
 	private int isAlign = 0;
 	private Button button_take_photos;
+	private ImageView testImageView;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -159,6 +166,7 @@ public class VideoRecogniseActivity extends Activity {
 	@SuppressLint("ShowToast")
 	@SuppressWarnings("deprecation")
 	private void initUI() {
+		testImageView = (ImageView) findViewById(R.id.testImageView);
 		button_take_photos = (Button) findViewById(R.id.button_take_photos);
 		mPreviewSurface = (SurfaceView) findViewById(R.id.sfv_preview);
 		mFaceSurface = (SurfaceView) findViewById(R.id.sfv_face);
@@ -239,26 +247,49 @@ public class VideoRecogniseActivity extends Activity {
 	Camera.PictureCallback jpeg = new Camera.PictureCallback() {
 		@Override
 		public void onPictureTaken(byte[] data, Camera camera) {
+			Log.i(TAG, "onPictureTaken_data.length: " + data.length);
 			String filename = "waitForRename.jpg";
 			FileOutputStream fos;
+			//获取拍到的图片Bitmap
+			Bitmap bitmap_source = null;
+			String pictureStoragePath = FaceUtil.getPictureStoragePath(getApplicationContext());
+			File f = new File(pictureStoragePath, filename);
 			try {
-				fos = new FileOutputStream(
-						new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) +
-								"/" + filename));
-				//获取拍到的图片Bitmap
-				Bitmap bitmap_source = BitmapFactory.decodeByteArray(data, 0, data.length);
-				BufferedOutputStream bos = new BufferedOutputStream(fos);
-				// 根据旋转角度，生成旋转矩阵
-				Matrix matrix = new Matrix();
-				matrix.postRotate(270);
-				//旋转图片
-				Bitmap mBitmap1 = Bitmap.createBitmap(bitmap_source, 0, 0, bitmap_source.getWidth(), bitmap_source.getHeight(), matrix, true);
-				//裁剪图片压缩图片大小为尺寸1200*900，便于传输存储
-				Bitmap mBitmap = mBitmap1.createScaledBitmap(mBitmap1, STORAGE_WIDTH, STORAGE_HEIGHT, false);
-				mBitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
+				fos = new FileOutputStream(f);
+				if (data.length < 35000) {
+					YuvImage image = new YuvImage(nv21, ImageFormat.NV21, PREVIEW_WIDTH, PREVIEW_HEIGHT, null);   //将NV21 data保存成YuvImage
+					//图像压缩
+					image.compressToJpeg(
+							new Rect(0, 0, image.getWidth(), image.getHeight()),
+							100, fos);
+					Log.i(TAG, "onPictureTaken_data.length<20000: " + data.length);
+					Log.i(TAG, "onPictureTaken_nv21.length: " + nv21.length);
+					bitmap_source = FaceUtil.compressFacePhoto(f.getAbsolutePath());
+					fos = new FileOutputStream(f);
+					BufferedOutputStream bos = new BufferedOutputStream(fos);
+					//旋转图片
+					// 根据旋转角度，生成旋转矩阵
+					Matrix matrix = new Matrix();
+					matrix.postRotate(270);
+					Bitmap mBitmap1 = Bitmap.createBitmap(bitmap_source, 0, 0, bitmap_source.getWidth(), bitmap_source.getHeight(), matrix, true);
+					testImageView.setImageBitmap(mBitmap1);
+					boolean result = mBitmap1.compress(Bitmap.CompressFormat.JPEG, 100, bos);
+					Log.i(TAG, "onPictureTaken_mBitmap1.compress: "+result);
+				} else {
+					bitmap_source = FaceUtil.compressFacePhoto(data);
+					BufferedOutputStream bos = new BufferedOutputStream(fos);
+					//旋转图片
+					// 根据旋转角度，生成旋转矩阵
+					Matrix matrix = new Matrix();
+					matrix.postRotate(270);
+					Bitmap mBitmap1 = Bitmap.createBitmap(bitmap_source, 0, 0, bitmap_source.getWidth(), bitmap_source.getHeight(), matrix, true);
+					testImageView.setImageBitmap(mBitmap1);
+					mBitmap1.compress(Bitmap.CompressFormat.JPEG, 70, bos);
+				}
 				//fos.write(data);
 				fos.flush();
 				fos.close();
+				//bos.close();
 				Log.i(TAG, "onPictureTaken: 图片保存成功");
 				Intent intent = new Intent(getApplicationContext(), DialogInputNameActivity.class);
 				startActivityForResult(intent, 0);
@@ -274,11 +305,12 @@ public class VideoRecogniseActivity extends Activity {
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
 		String username = null;
+		String pictureStoragePath = FaceUtil.getPictureStoragePath(getApplicationContext());
 		if (data != null) {
 			username = data.getStringExtra("username");
 		}
 		if (resultCode == 1) {
-			File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + "/waitForRename.jpg");
+			File file = new File(pictureStoragePath, "waitForRename.jpg");
 			if (file.exists()) {
 				showNormalDialog(null, "正在注册新人脸，请保持网络通畅...", false, new ProgressBar(this), false);
 				RegisterFace(file, username);
@@ -287,7 +319,7 @@ public class VideoRecogniseActivity extends Activity {
 			}
 			//mCamera.startPreview();//保存之后返回预览界面
 		} else {
-			File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + "/waitForRename.jpg");
+			File file = new File(pictureStoragePath + "/waitForRename.jpg");
 			if (file.exists()) {
 				if (file.delete()) {
 					Toast.makeText(this, "已取消保存人脸", Toast.LENGTH_LONG).show();
@@ -347,6 +379,12 @@ public class VideoRecogniseActivity extends Activity {
 			@Override
 			public void run() {
 				Response response = FaceUtil.detectFace(imageFile, API_KEY, API_Secret);
+				while (null==response){
+					Message message = new Message();
+					message.arg1 = DETECT_FAILED_IO_EXCEPTION;
+					myhandler.sendMessage(message);
+					return;
+				}
 				Face face = null;
 				int attempt = 0;
 				while (response.code() != 200 && attempt < 5) {
@@ -372,7 +410,7 @@ public class VideoRecogniseActivity extends Activity {
 					message.arg1 = DETECT_FAILED_NO_FACE;
 					myhandler.sendMessage(message);
 				} else {
-					File newFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + "/" + face.getFace_token() + ".jpg");
+					File newFile = new File(FaceUtil.getPictureStoragePath(getApplicationContext()), face.getFace_token() + ".jpg");
 					if (!imageFile.renameTo(newFile)) {
 						showNormalDialog(null, "文件重命名失败，请检查磁盘空间是否充足？", false, null, true);
 						return;
@@ -413,23 +451,25 @@ public class VideoRecogniseActivity extends Activity {
 						SharedPreferences sp = getSharedPreferences("login", Context.MODE_PRIVATE);
 						String outerId = sp.getString("username", "default");
 						attempt = 0;
-						while (response.code() != 200 && attempt < 5) {
-							response = FaceUtil.createFaceSet(API_KEY, API_Secret, "default", outerId, face.getFace_token());
-							String JSON2 = null;
-							try {
-								JSON2 = response.body().string();
-							} catch (IOException e) {
-								e.printStackTrace();
-							}
-							Log.i(TAG, "faceSetOperate.createFaceSet(): " + JSON2);
+						Response response1 = FaceUtil.createFaceSet(API_KEY, API_Secret, "default", outerId, face.getFace_token());
+						while (response1 != null && response1.code() != 200 && attempt < 10) {
+							response1 = FaceUtil.createFaceSet(API_KEY, API_Secret, "default", outerId, face.getFace_token());
 							attempt++;
+							Log.e(TAG, "createFaceSet_attempt: " + attempt);
 							try {
 								Thread.sleep(50);
 							} catch (InterruptedException e) {
 								e.printStackTrace();
 							}
 						}
-						if (response.code() == 200) {
+						if (response1 != null && response1.code() == 200) {
+							String JSON2 = null;
+							try {
+								JSON2 = response1.body().string();
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+							Log.i(TAG, "faceSetOperate.createFaceSet(): " + JSON2);
 							SharedPreferences preferences = getSharedPreferences("detectFace", Context.MODE_PRIVATE);
 							SharedPreferences.Editor editor = preferences.edit();
 							editor.remove("lastUpdateObjectId");
@@ -446,7 +486,6 @@ public class VideoRecogniseActivity extends Activity {
 						myhandler.sendMessage(message);
 					}
 				}
-
 			}
 		}).start();
 	}
@@ -498,8 +537,7 @@ public class VideoRecogniseActivity extends Activity {
 							}
 						}
 					}).start();
-				} else
-				{
+				} else {
 					Log.e(TAG, "file.uploadblock:failed ", e);
 					Message message = new Message();
 					message.arg1 = DETECT_FAILED_IO_EXCEPTION;
@@ -515,8 +553,7 @@ public class VideoRecogniseActivity extends Activity {
 			}
 		});
 		int attemp = 0;
-		while (!updateSuccess[0] && attemp < 300)
-		{
+		while (!updateSuccess[0] && attemp < 300) {
 			attemp++;
 			Log.i(TAG, "updateImageFile——attempt: " + attemp);
 			try {
@@ -560,8 +597,10 @@ public class VideoRecogniseActivity extends Activity {
 
 		Parameters params = mCamera.getParameters();
 		params.setPreviewFormat(ImageFormat.NV21);
+		params.setPictureFormat(ImageFormat.JPEG);
 		params.setPreviewSize(PREVIEW_WIDTH, PREVIEW_HEIGHT);
 		mCamera.setParameters(params);
+
 
 		// 设置显示的偏转角度，大部分机器是顺时针90度，某些机器需要按情况设置
 		mCamera.setDisplayOrientation(90);
@@ -569,6 +608,7 @@ public class VideoRecogniseActivity extends Activity {
 
 			@Override
 			public void onPreviewFrame(byte[] data, Camera camera) {
+				//Log.i(TAG, "onPreviewFrame: " + data.length);
 				System.arraycopy(data, 0, nv21, 0, data.length);
 			}
 		});

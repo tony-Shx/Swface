@@ -10,4 +10,7 @@
     <string name="login_textView_tip_text">温馨提示：若手机号尚未注册，将自动为您注册</string>
     <string name="login_imageButton_login_contentDescription">登录</string>
     <string name="login_textView4_password_text">密码:</string>
+    <string name="button_manage">管理已注册用户</string>
+    <string name="recycleView_textView_face_name_text">姓名：</string>
+    <string name="recycleView_textView_register_time_text">注册时间：</string>
 </resources>

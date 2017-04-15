@@ -11,7 +11,7 @@ import android.widget.Button;
 import com.henu.swface.R;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-	private Button button_register,button_sign_in;
+	private Button button_register,button_sign_in,button_manage;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -23,8 +23,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 	private void initUI() {
 		button_register = (Button) this.findViewById(R.id.button_register);
 		button_sign_in = (Button) this.findViewById(R.id.button_sign_in);
+		button_manage = (Button) this.findViewById(R.id.button_manage);
 		button_register.setOnClickListener(this);
 		button_sign_in.setOnClickListener(this);
+		button_manage.setOnClickListener(this);
 	}
 
 	@Override
@@ -36,6 +38,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 				break;
 			case R.id.button_sign_in:
 				startActivity(new Intent(this,SignInActivity.class));
+				break;
+			case R.id.button_manage:
+				startActivity(new Intent(this,ManageActivity.class));
 				break;
 			default:
 				break;

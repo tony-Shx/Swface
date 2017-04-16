@@ -1,4 +1,4 @@
-package com.henu.swface.Datebase;
+package com.henu.swface.Database;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;

@@ -13,4 +13,7 @@
     <string name="button_manage">管理已注册用户</string>
     <string name="recycleView_textView_face_name_text">姓名：</string>
     <string name="recycleView_textView_register_time_text">注册时间：</string>
+    <string name="imageview_face_detail_head">imageView_face_detail_head</string>
+    <string name="textView_face_detail_register_time_text">注册时间：</string>
+    <string name="button_face_detail_text">编辑</string>
 </resources>

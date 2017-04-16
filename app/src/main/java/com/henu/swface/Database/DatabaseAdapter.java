@@ -1,8 +1,7 @@
-package com.henu.swface.Datebase;
+package com.henu.swface.Database;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -24,8 +23,6 @@ import cn.bmob.v3.BmobQuery;
 import cn.bmob.v3.exception.BmobException;
 import cn.bmob.v3.listener.FindListener;
 import cn.bmob.v3.listener.SaveListener;
-
-import static cn.bmob.v3.Bmob.getApplicationContext;
 
 /**
  * Created by 宋浩祥 on 2017/3/7.

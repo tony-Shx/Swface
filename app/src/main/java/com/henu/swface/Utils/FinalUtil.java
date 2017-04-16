@@ -4,7 +4,7 @@ package com.henu.swface.Utils;
  * Created by Administrator on 2017/4/16.
  */
 
-public class FinalUtil {
+public final class FinalUtil {
 	public final static int DETECT_SUCCESS = 0X110;
 	public final static int DETECT_FAILED_IO_EXCEPTION = 0X111;
 	public final static int DETECT_FAILED_NO_FACE = 0X112;

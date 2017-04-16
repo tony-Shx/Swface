@@ -47,6 +47,7 @@ import android.widget.Toast;
 
 import com.henu.swface.Datebase.DatabaseAdapter;
 import com.henu.swface.R;
+import com.henu.swface.Utils.FinalUtil;
 import com.henu.swface.VO.Face;
 import com.henu.swface.VO.FaceSignIn;
 import com.henu.swface.VO.SignLog;
@@ -64,6 +65,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import cn.bmob.v3.exception.BmobException;
+import cn.bmob.v3.listener.SaveListener;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
@@ -79,11 +82,6 @@ public class SignInActivity extends BaseVideoActivity {
 
 	private final static String API_KEY = "lJsij4n8pYEj3bW-tSJqEhRgkdfHobC8";
 	private final static String API_Secret = "i1H3kRBBzJ2Wo_1T-6RsbRmWgcHAREww";
-	private final static int SIGN_IN_SUCCESS = 0x200;
-	private final static int SIGN_IN_FAILED_IOEXCEPTION = 0x201;
-	private final static int SIGN_IN_FAILED_FILENOTFIND = 0x202;
-	private final static int SIGN_IN_FAILED_NOUSER = 0x203;
-	private final static int ADDUSERSUCCESS = 0x204;
 	private final static String TAG = SignInActivity.class.getSimpleName();
 	private AlertDialog dialog = null;
 	private Button button_take_photos;
@@ -95,7 +93,6 @@ public class SignInActivity extends BaseVideoActivity {
 		//setContentView(R.layout.activity_video);
 		initUI();
 	}
-
 
 
 	@SuppressLint("ShowToast")
@@ -122,9 +119,9 @@ public class SignInActivity extends BaseVideoActivity {
 						//获取拍到的图片Bitmap
 						Bitmap bitmap_source = null;
 						String pictureStoragePath = FaceUtil.getPictureStoragePath(getApplicationContext());
-						File f = new File(pictureStoragePath, filename);
+						File imageFile = new File(pictureStoragePath, filename);
 						try {
-							fos = new FileOutputStream(f);
+							fos = new FileOutputStream(imageFile);
 							if (data.length < 35000) {
 								YuvImage image = new YuvImage(nv21, ImageFormat.NV21, PREVIEW_WIDTH, PREVIEW_HEIGHT, null);   //将NV21 data保存成YuvImage
 								//图像压缩
@@ -133,8 +130,8 @@ public class SignInActivity extends BaseVideoActivity {
 										100, fos);
 								Log.i(TAG, "onPictureTaken_data.length<20000: " + data.length);
 								Log.i(TAG, "onPictureTaken_nv21.length: " + nv21.length);
-								bitmap_source = FaceUtil.compressFacePhoto(f.getAbsolutePath());
-								fos = new FileOutputStream(f);
+								bitmap_source = FaceUtil.compressFacePhoto(imageFile.getAbsolutePath());
+								fos = new FileOutputStream(imageFile);
 								BufferedOutputStream bos = new BufferedOutputStream(fos);
 								//旋转图片
 								// 根据旋转角度，生成旋转矩阵
@@ -143,7 +140,7 @@ public class SignInActivity extends BaseVideoActivity {
 								Bitmap mBitmap1 = Bitmap.createBitmap(bitmap_source, 0, 0, bitmap_source.getWidth(), bitmap_source.getHeight(), matrix, true);
 								testImageView.setImageBitmap(mBitmap1);
 								boolean result = mBitmap1.compress(Bitmap.CompressFormat.JPEG, 100, bos);
-								Log.i(TAG, "onPictureTaken_mBitmap1.compress: "+result);
+								Log.i(TAG, "onPictureTaken_mBitmap1.compress: " + result);
 							} else {
 								bitmap_source = FaceUtil.compressFacePhoto(data);
 								BufferedOutputStream bos = new BufferedOutputStream(fos);
@@ -157,7 +154,7 @@ public class SignInActivity extends BaseVideoActivity {
 							}
 							fos.flush();
 							fos.close();
-							searchByOuterId(f);
+							searchByOuterId(imageFile);
 						} catch (Exception e) {
 							System.out.println("图片保存异常" + e.getMessage());
 							e.printStackTrace();
@@ -184,37 +181,53 @@ public class SignInActivity extends BaseVideoActivity {
 							Log.e(TAG, "searchFaceset: " + response.code() + response.message());
 						}
 						Message message = new Message();
-						message.arg1 = SIGN_IN_FAILED_IOEXCEPTION;
+						message.arg1 = FinalUtil.SIGN_IN_FAILED_IOEXCEPTION;
 						myhandler.sendMessage(message);
 						return;
 					}
 				} catch (Exception e) {
 					Log.e(TAG, "searchByOuterId: " + e.getMessage());
 					Message message = new Message();
-					message.arg1 = SIGN_IN_FAILED_IOEXCEPTION;
+					message.arg1 = FinalUtil.SIGN_IN_FAILED_IOEXCEPTION;
 					myhandler.sendMessage(message);
 					e.printStackTrace();
 				}
-				if (faceSignIn == null || faceSignIn.getFace_token()==null||faceSignIn.getFace_token().length() < 2) {
+				if (faceSignIn == null || faceSignIn.getFace_token() == null || faceSignIn.getFace_token().length() < 2) {
 					Message message = new Message();
-					message.arg1 = SIGN_IN_FAILED_FILENOTFIND;
+					message.arg1 = FinalUtil.SIGN_IN_FAILED_FILENOTFIND;
 					myhandler.sendMessage(message);
 				} else {
 					DatabaseAdapter db = new DatabaseAdapter(getApplicationContext());
-					UserHasSigned userHasSigned = db.findUserByFaceToken(faceSignIn, myhandler);
-					Message message = new Message();
+					final UserHasSigned userHasSigned = db.findUserByFaceToken(faceSignIn, myhandler);
+					final Message message = new Message();
 					if (userHasSigned.getUser_name() != null) {
-						message.arg1 = SIGN_IN_SUCCESS;
-						if (faceSignIn.getConfidence() > faceSignIn.getThresholds5()) {
-							Bundle bundle = new Bundle();
-							bundle.putFloat("confidence", faceSignIn.getConfidence());
-							bundle.putFloat("thresholds3", faceSignIn.getThresholds3());
-							bundle.putFloat("thresholds4", faceSignIn.getThresholds4());
-							bundle.putFloat("thresholds5", faceSignIn.getThresholds5());
-							message.setData(bundle);
-						}
-						message.obj = userHasSigned;
-						myhandler.sendMessage(message);
+						SignLog signLog = new SignLog(getApplicationContext());
+						signLog.setUser_name(userHasSigned.getUser_name());
+						signLog.setConfidence(faceSignIn.getConfidence());
+						signLog.setTime(System.currentTimeMillis());
+						signLog.setFaceToken(userHasSigned.getFace_token1());
+						final FaceSignIn finalFaceSignIn = faceSignIn;
+						signLog.save(new SaveListener<String>() {
+							@Override
+							public void done(String s, BmobException e) {
+								if(e==null){
+									message.arg1 = FinalUtil.SIGN_IN_SUCCESS;
+									Bundle bundle = new Bundle();
+									bundle.putFloat("confidence", finalFaceSignIn.getConfidence());
+									bundle.putFloat("thresholds3", finalFaceSignIn.getThresholds3());
+									bundle.putFloat("thresholds4", finalFaceSignIn.getThresholds4());
+									bundle.putFloat("thresholds5", finalFaceSignIn.getThresholds5());
+									message.setData(bundle);
+									message.obj = userHasSigned;
+									myhandler.sendMessage(message);
+								}else{
+									Message message = new Message();
+									message.arg1 = FinalUtil.SIGN_IN_FAILED_IOEXCEPTION;
+									myhandler.sendMessage(message);
+								}
+							}
+						});
+
 					}
 				}
 			}
@@ -228,7 +241,7 @@ public class SignInActivity extends BaseVideoActivity {
 		public void handleMessage(Message msg) {
 			AlertDialog.Builder newdialog = new AlertDialog.Builder(SignInActivity.this);
 			switch (msg.arg1) {
-				case SIGN_IN_SUCCESS:
+				case FinalUtil.SIGN_IN_SUCCESS:
 					newdialog.setCancelable(false);
 					newdialog.setTitle("温馨提示：");
 					final UserHasSigned userHasSigned = (UserHasSigned) msg.obj;
@@ -248,7 +261,7 @@ public class SignInActivity extends BaseVideoActivity {
 						newdialog.setPositiveButton("完成", new DialogInterface.OnClickListener() {
 							@Override
 							public void onClick(DialogInterface dialog, int which) {
-								SignLog signLog = new SignLog();
+								SignLog signLog = new SignLog(getApplicationContext());
 								signLog.setTime(System.currentTimeMillis());
 								signLog.setUser_name(userHasSigned.getUser_name());
 								signLog.setConfidence(confidence);
@@ -269,7 +282,7 @@ public class SignInActivity extends BaseVideoActivity {
 						newdialog.setPositiveButton("完成", new DialogInterface.OnClickListener() {
 							@Override
 							public void onClick(DialogInterface dialog, int which) {
-								SignLog signLog = new SignLog();
+								SignLog signLog = new SignLog(getApplicationContext());
 								signLog.setTime(System.currentTimeMillis());
 								signLog.setUser_name(userHasSigned.getUser_name());
 								signLog.setConfidence(confidence);
@@ -302,7 +315,7 @@ public class SignInActivity extends BaseVideoActivity {
 					dialog.cancel();
 					newdialog.show();
 					break;
-				case SIGN_IN_FAILED_IOEXCEPTION:
+				case FinalUtil.SIGN_IN_FAILED_IOEXCEPTION:
 					newdialog.setCancelable(false);
 					newdialog.setTitle("温馨提示：");
 					newdialog.setMessage("签到失败！\n请检查网络连接！！");
@@ -315,7 +328,7 @@ public class SignInActivity extends BaseVideoActivity {
 					dialog.cancel();
 					newdialog.show();
 					break;
-				case SIGN_IN_FAILED_FILENOTFIND:
+				case FinalUtil.SIGN_IN_FAILED_FILENOTFIND:
 					newdialog.setCancelable(false);
 					newdialog.setTitle("温馨提示：");
 					newdialog.setMessage("签到失败！\n未检测到人脸，拍照时请保证光线充足且不要逆光！！");
@@ -330,7 +343,7 @@ public class SignInActivity extends BaseVideoActivity {
 					});
 					dialog.cancel();
 					newdialog.show();
-				case SIGN_IN_FAILED_NOUSER:
+				case FinalUtil.SIGN_IN_FAILED_NOUSER:
 					newdialog.setCancelable(false);
 					newdialog.setTitle("温馨提示：");
 					newdialog.setMessage("签到失败！\n该人脸尚未注册，请先注册再签到");
@@ -344,7 +357,7 @@ public class SignInActivity extends BaseVideoActivity {
 					dialog.cancel();
 					newdialog.show();
 					break;
-				case ADDUSERSUCCESS:
+				case FinalUtil.ADDUSERSUCCESS:
 
 					break;
 				default:
@@ -352,7 +365,6 @@ public class SignInActivity extends BaseVideoActivity {
 			}
 		}
 	};
-
 
 
 	@Override

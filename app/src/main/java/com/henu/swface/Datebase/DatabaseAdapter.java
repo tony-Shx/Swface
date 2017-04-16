@@ -10,6 +10,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
+import com.henu.swface.Utils.FinalUtil;
 import com.henu.swface.VO.Face;
 import com.henu.swface.VO.FaceSignIn;
 import com.henu.swface.VO.SignLog;
@@ -24,19 +25,18 @@ import cn.bmob.v3.exception.BmobException;
 import cn.bmob.v3.listener.FindListener;
 import cn.bmob.v3.listener.SaveListener;
 
+import static cn.bmob.v3.Bmob.getApplicationContext;
+
 /**
  * Created by 宋浩祥 on 2017/3/7.
  */
 
 public class DatabaseAdapter {
 	private static final String TAG = "DatabaseAdapter";
-
 	private static final String Sql_findUserByFaceToken = "SELECT user_name FROM UserHasSigned WHERE face_token1 = ? OR face_token2 = ? OR face_token3 = ? OR face_token4 = ? OR face_token5 = ?;";
 	private Context context;
 	private DatabaseHelper databaseHelper;
-	private final static int SIGN_IN_SUCCESS = 0x200;
-	private static final int ADDUSERSUCCESS = 0x204;
-	private final static int SIGN_IN_FAILED_NOUSER = 0x203;
+
 
 	public DatabaseAdapter(Context context) {
 		this.context = context;
@@ -187,64 +187,53 @@ public class DatabaseAdapter {
 	}
 
 
-	public boolean addUser_User(final UserHasSigned userHasSigned) {
-		final boolean[] saveSuccess = {false};
-		if (userHasSigned.getObjectId() == null) {
-			userHasSigned.save(new SaveListener<String>() {
-				@Override
-				public void done(String s, BmobException e) {
-					if (e == null) {
-						saveSuccess[0] = true;
-						Log.i(TAG, "userHasSigned.save: success");
-						SharedPreferences sharedPreferences = context.getSharedPreferences("detectFace", Context.MODE_PRIVATE);
-						SharedPreferences.Editor editor = sharedPreferences.edit();
-						editor.putString("lastUpdateObjectId", s);
-						editor.commit();
-					} else {
-						saveSuccess[0] = false;
-						Log.e(TAG, "userHasSigned.save: failed" + e);
-					}
-				}
-			});
-		}
-		if (userHasSigned.getObjectId() == null) {
-			int attemp = 0;
-			while (!saveSuccess[0] && attemp < 150) {
-				attemp++;
-				try {
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-		if (saveSuccess[0] || userHasSigned.getObjectId() != null) {
-			SQLiteDatabase db = databaseHelper.getWritableDatabase();
-			ContentValues contentValues = new ContentValues();
-			contentValues.put(UserMetaData.UserTable.USER_NAME, userHasSigned.getUser_name());
-			if (userHasSigned.getFace_token1() != null && !userHasSigned.getFace_token1().isEmpty()) {
-				contentValues.put(UserMetaData.UserTable.FACE_TOKEN1, userHasSigned.getFace_token1());
-			}
-			if (userHasSigned.getFace_token2() != null && !userHasSigned.getFace_token2().isEmpty()) {
-				contentValues.put(UserMetaData.UserTable.FACE_TOKEN2, userHasSigned.getFace_token2());
-			}
-			if (userHasSigned.getFace_token3() != null && !userHasSigned.getFace_token3().isEmpty()) {
-				contentValues.put(UserMetaData.UserTable.FACE_TOKEN3, userHasSigned.getFace_token3());
-			}
-			if (userHasSigned.getFace_token4() != null && !userHasSigned.getFace_token4().isEmpty()) {
-				contentValues.put(UserMetaData.UserTable.FACE_TOKEN4, userHasSigned.getFace_token4());
-			}
-			if (userHasSigned.getFace_token5() != null && !userHasSigned.getFace_token5().isEmpty()) {
-				contentValues.put(UserMetaData.UserTable.FACE_TOKEN5, userHasSigned.getFace_token5());
-			}
-			db.insert(UserMetaData.UserTable.TABLE_NAME, UserMetaData.UserTable.USER_NAME, contentValues);
-			db.close();
-			Log.i(TAG,"addUser_User: Success!");
-			return true;
-		} else {
-			return false;
-		}
+	public void addUser_User(final UserHasSigned userHasSigned, final Handler myHandler) {
+		userHasSigned.save(new SaveListener<String>() {
+			@Override
+			public void done(String s, BmobException e) {
+				if (e == null) {
+					Log.i(TAG, "userHasSigned.save: success");
 
+					SQLiteDatabase db = databaseHelper.getWritableDatabase();
+					ContentValues contentValues = new ContentValues();
+					contentValues.put(UserMetaData.UserTable.USER_NAME, userHasSigned.getUser_name());
+					if (userHasSigned.getFace_url1() != null && !userHasSigned.getFace_url1().isEmpty()) {
+						contentValues.put(UserMetaData.UserTable.FACE_URL1, userHasSigned.getFace_url1());
+					}
+					if (userHasSigned.getFace_token1() != null && !userHasSigned.getFace_token1().isEmpty()) {
+						contentValues.put(UserMetaData.UserTable.FACE_TOKEN1, userHasSigned.getFace_token1());
+					}
+					if (userHasSigned.getFace_token2() != null && !userHasSigned.getFace_token2().isEmpty()) {
+						contentValues.put(UserMetaData.UserTable.FACE_TOKEN2, userHasSigned.getFace_token2());
+					}
+					if (userHasSigned.getFace_token3() != null && !userHasSigned.getFace_token3().isEmpty()) {
+						contentValues.put(UserMetaData.UserTable.FACE_TOKEN3, userHasSigned.getFace_token3());
+					}
+					if (userHasSigned.getFace_token4() != null && !userHasSigned.getFace_token4().isEmpty()) {
+						contentValues.put(UserMetaData.UserTable.FACE_TOKEN4, userHasSigned.getFace_token4());
+					}
+					if (userHasSigned.getFace_token5() != null && !userHasSigned.getFace_token5().isEmpty()) {
+						contentValues.put(UserMetaData.UserTable.FACE_TOKEN5, userHasSigned.getFace_token5());
+					}
+					db.insert(UserMetaData.UserTable.TABLE_NAME, UserMetaData.UserTable.USER_NAME, contentValues);
+					db.close();
+
+					Message message = new Message();
+					message.arg1 = FinalUtil.UPDATE_PICTURE_SUCCESS;
+					Bundle bundle = new Bundle();
+					bundle.putString("objectId", s);
+					bundle.putString("faceToken", userHasSigned.getFace_url1());
+					message.setData(bundle);
+					myHandler.sendMessage(message);
+					Log.i(TAG, "addUser_User: Success!");
+				} else {
+					Log.e(TAG, "userHasSigned.save: failed" + e);
+					Message message = new Message();
+					message.arg1 = FinalUtil.DETECT_FAILED_IO_EXCEPTION;
+					myHandler.sendMessage(message);
+				}
+			}
+		});
 	}
 
 	public ArrayList<UserHasSigned> findAllUser_User() {
@@ -259,6 +248,11 @@ public class DatabaseAdapter {
 			userHasSigned.setFace_token3(cursor.getString(cursor.getColumnIndex("face_token3")));
 			userHasSigned.setFace_token4(cursor.getString(cursor.getColumnIndex("face_token4")));
 			userHasSigned.setFace_token5(cursor.getString(cursor.getColumnIndex("face_token5")));
+			userHasSigned.setFace_url1(cursor.getString(cursor.getColumnIndex("face_url1")));
+			userHasSigned.setFace_url2(cursor.getString(cursor.getColumnIndex("face_url2")));
+			userHasSigned.setFace_url3(cursor.getString(cursor.getColumnIndex("face_url3")));
+			userHasSigned.setFace_url4(cursor.getString(cursor.getColumnIndex("face_url4")));
+			userHasSigned.setFace_url5(cursor.getString(cursor.getColumnIndex("face_url5")));
 			list.add(userHasSigned);
 		}
 		cursor.close();
@@ -273,6 +267,7 @@ public class DatabaseAdapter {
 		final UserHasSigned userHasSigned = new UserHasSigned(context);
 		while (cursor.moveToNext()) {
 			userHasSigned.setUser_name(cursor.getString(cursor.getColumnIndex("user_name")));
+			userHasSigned.setFace_url1(cursor.getString(cursor.getColumnIndex("face_token1")));
 		}
 		cursor.close();
 		db.close();
@@ -301,26 +296,37 @@ public class DatabaseAdapter {
 				@Override
 				public void done(List<UserHasSigned> list, BmobException e) {
 					if (e == null && !list.isEmpty()) {
-						UserHasSigned userHasSigned1 = list.get(0);
-						if(addUser_User(userHasSigned1)){
-							Message message=new Message();
-							message.arg1 = SIGN_IN_SUCCESS;
-							if (faceSignIn.getConfidence() > faceSignIn.getThresholds5()) {
-								Bundle bundle = new Bundle();
-								bundle.putFloat("confidence", faceSignIn.getConfidence());
-								bundle.putFloat("thresholds3", faceSignIn.getThresholds3());
-								bundle.putFloat("thresholds4", faceSignIn.getThresholds4());
-								bundle.putFloat("thresholds5", faceSignIn.getThresholds5());
-								message.setData(bundle);
+						final UserHasSigned userHasSigned1 = list.get(0);
+						SignLog signLog = new SignLog(context);
+						signLog.setUser_name(userHasSigned1.getUser_name());
+						signLog.setConfidence(faceSignIn.getConfidence());
+						signLog.setTime(System.currentTimeMillis());
+						signLog.setFaceToken(userHasSigned1.getFace_token1());
+						signLog.save(new SaveListener<String>() {
+							@Override
+							public void done(String s, BmobException e) {
+								if(e==null){
+									Message message = new Message();
+									message.arg1 = FinalUtil.SIGN_IN_SUCCESS;
+									Bundle bundle = new Bundle();
+									bundle.putFloat("confidence", faceSignIn.getConfidence());
+									bundle.putFloat("thresholds3", faceSignIn.getThresholds3());
+									bundle.putFloat("thresholds4", faceSignIn.getThresholds4());
+									bundle.putFloat("thresholds5", faceSignIn.getThresholds5());
+									message.setData(bundle);
+									message.obj = userHasSigned1;
+									myHandler.sendMessage(message);
+								}else{
+									Message message = new Message();
+									message.arg1 = FinalUtil.SIGN_IN_FAILED_IOEXCEPTION;
+									myHandler.sendMessage(message);
+								}
 							}
-							userHasSigned.setUser_name(userHasSigned1.getUser_name());
-							message.obj = userHasSigned;
-							myHandler.sendMessage(message);
-						}else{
-							Message message = new Message();
-							message.arg1 =SIGN_IN_FAILED_NOUSER;
-							myHandler.sendMessage(message);
-						}
+						});
+					} else {
+						Message message = new Message();
+						message.arg1 = FinalUtil.SIGN_IN_FAILED_NOUSER;
+						myHandler.sendMessage(message);
 					}
 				}
 			});

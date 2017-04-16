@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.util.Log;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -42,7 +43,7 @@ public class ManageActivity extends Activity {
         dialog = builder.show();
         dialog.setCancelable(false);
         recyclerView_manage = (RecyclerView) findViewById(R.id.recyclerView_manage);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        StaggeredGridLayoutManager layoutManager = new StaggeredGridLayoutManager(3,StaggeredGridLayoutManager.VERTICAL);
         recyclerView_manage.setLayoutManager(layoutManager);
         initData();
     }

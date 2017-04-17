@@ -6,13 +6,13 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context="com.henu.swface.activity.FaceDetailActivity">
-    <LinearLayout
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar_face_detail"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:background="#74828b">
 
-
-    </LinearLayout>
+    </android.support.v7.widget.Toolbar>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -65,6 +65,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:background="@mipmap/edit_button"
+        android:contentDescription="@string/button_face_detail_edit"
         android:id="@+id/button_face_detail_edit"
         android:text="@string/button_face_detail_text"
         />
@@ -78,10 +79,28 @@
 
     </android.support.v7.widget.RecyclerView>
 
-    <TextView
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="温馨提示：\n               1.多张图片有利于提高签到成功率！\n               2.人脸库中每人可存储最多5张图片"
-        />
+        android:orientation="vertical">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/textView_tips_text"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/textView_face_detail_tip1"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/textView_face_detail_tip2"
+            />
+    </LinearLayout>
+
 
 </LinearLayout>

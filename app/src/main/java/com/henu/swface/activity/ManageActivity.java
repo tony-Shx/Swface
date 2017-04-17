@@ -9,7 +9,9 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -28,6 +30,7 @@ public class ManageActivity extends Activity {
 
     private RecyclerView recyclerView_manage;
     private Dialog dialog;
+    private Toolbar toolbar;
     private static final String TAG = ManageActivity.class.getSimpleName();
 
     @Override
@@ -43,12 +46,22 @@ public class ManageActivity extends Activity {
         dialog = builder.show();
         dialog.setCancelable(false);
         recyclerView_manage = (RecyclerView) findViewById(R.id.recyclerView_manage);
+        toolbar = (Toolbar) findViewById(R.id.toolbar_manage);
         StaggeredGridLayoutManager layoutManager = new StaggeredGridLayoutManager(3,StaggeredGridLayoutManager.VERTICAL);
         recyclerView_manage.setLayoutManager(layoutManager);
         initData();
     }
 
     private void initData() {
+        toolbar.setNavigationIcon(R.mipmap.button_back);
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish();
+            }
+        });
+        toolbar.setTitle("已注册用户");
+        toolbar.inflateMenu(R.menu.base_toolbar_menu);
         BmobQuery<UserHasSigned> query = new BmobQuery<>();
         SharedPreferences sharedPreferences = getSharedPreferences("login", Context.MODE_PRIVATE);
         String telephone = sharedPreferences.getString("username","");

@@ -6,6 +6,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -22,12 +25,14 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FaceDetailActivity extends Activity {
+public class FaceDetailActivity extends Activity implements View.OnClickListener {
 	private ImageView imageView_face_detail_head;
 	private TextView textView_face_detail_name,textView_face_detail_register_time;
 	private ImageButton button_face_detail_edit;
 	private RecyclerView recyclerView_face_detail;
+	private Toolbar toolbar;
 	private List<Uri> imageList = new ArrayList<>();
+	private static final String TAG = FaceDetailActivity.class.getSimpleName();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +47,15 @@ public class FaceDetailActivity extends Activity {
 	private void initDate() {
 		Intent intent = getIntent();
 		UserHasSigned userHasSigned = (UserHasSigned) intent.getSerializableExtra("userHasSigned");
+		toolbar.setNavigationIcon(R.mipmap.button_back);
+		toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				finish();
+			}
+		});
+		toolbar.setTitle(userHasSigned.getUser_name()+"的详细信息");
+		toolbar.inflateMenu(R.menu.base_toolbar_menu);
 		File imageFile = new File(FaceUtil.getPictureStoragePath(this),userHasSigned.getFace_token1()+".jpg");
 		if(imageFile.exists()){
 			Uri imageUri1 = Uri.fromFile(imageFile);
@@ -86,5 +100,15 @@ public class FaceDetailActivity extends Activity {
 		textView_face_detail_register_time = (TextView) findViewById(R.id.textView_face_detail_register_time);
 		button_face_detail_edit = (ImageButton) findViewById(R.id.button_face_detail_edit);
 		recyclerView_face_detail = (RecyclerView) findViewById(R.id.recyclerView_face_detail);
+		toolbar = (Toolbar) findViewById(R.id.toolbar_face_detail);
+
+	}
+
+	@Override
+	public void onClick(View view) {
+		Log.i(TAG, "onClick: "+view.getId());
+//		switch (view.getId()){
+//			case R.id.bu
+//		}
 	}
 }

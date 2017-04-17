@@ -16,4 +16,9 @@
     <string name="imageview_face_detail_head">imageView_face_detail_head</string>
     <string name="textView_face_detail_register_time_text">注册时间：</string>
     <string name="button_face_detail_text">编辑</string>
+    <string name="textView_tips_text">温馨提示：</string>
+    <string name="textView_face_detail_tip1">1.多张图片有利于提高签到成功率！</string>
+    <string name="textView_face_detail_tip2">2.人脸库中每人可存储最多5张图片</string>
+    <string name="menu_item_about">关于</string>
+    <string name="button_face_detail_edit">button_face_detail_edit</string>
 </resources>

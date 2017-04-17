@@ -170,9 +170,11 @@ public class FaceDetailActivity extends Activity implements View.OnClickListener
 			switch (msg.arg1){
 				case FinalUtil.UPDATE_DETAIL_SUCCESS:
 					Toast.makeText(getApplicationContext(),"重命名成功",Toast.LENGTH_LONG).show();
-					String newUsername = (String) msg.obj;
-					userHasSigned.setUser_name(newUsername);
-					textView_face_detail_name.setText(userHasSigned.getUser_name());
+//					String newUsername = (String) msg.obj;
+//					userHasSigned.setUser_name(newUsername);
+					String username = userHasSigned.getUser_name();
+					textView_face_detail_name.setText(username);
+					toolbar.setTitle(username+"的详细信息");
 					break;
 				case FinalUtil.UPDATE_DETAIL_IO_EXCEPTION:
 					Toast.makeText(getApplicationContext(),"网络异常，重命名失败",Toast.LENGTH_LONG).show();

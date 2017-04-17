@@ -23,6 +23,8 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
+
+import com.henu.swface.Database.BmobDataHelper;
 import com.henu.swface.Database.DatabaseAdapter;
 import com.henu.swface.R;
 import com.henu.swface.Utils.FaceUtil;
@@ -345,7 +347,8 @@ public class VideoRecogniseActivity extends BaseVideoActivity {
 					new Thread(new Runnable() {
 						@Override
 						public void run() {
-							db.addUser_User(userHasSigned,myhandler);
+							BmobDataHelper bmobDataHelper = new BmobDataHelper(VideoRecogniseActivity.this,myhandler);
+							bmobDataHelper.addUserHasSign(userHasSigned);
 						}
 					}).start();
 				} else {

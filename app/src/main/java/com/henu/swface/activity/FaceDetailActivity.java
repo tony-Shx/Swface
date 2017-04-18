@@ -103,7 +103,7 @@ public class FaceDetailActivity extends Activity implements View.OnClickListener
 				}
 			}
 		}
-		FaceDetailAdapter adapter = new FaceDetailAdapter(imageList);
+		FaceDetailAdapter adapter = new FaceDetailAdapter(imageList,userHasSigned);
 		StaggeredGridLayoutManager layoutManager = new StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL);
 		recyclerView_face_detail.setLayoutManager(layoutManager);
 		recyclerView_face_detail.setAdapter(adapter);

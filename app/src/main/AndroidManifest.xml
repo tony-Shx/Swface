@@ -41,13 +41,15 @@
             </intent-filter>
         </activity>
         <activity android:name=".activity.MainActivity"/>
-        <activity android:name=".activity.VideoRecogniseActivity"/>
+        <activity android:name=".activity.RegisterFaceActivity"/>
         <activity android:name=".activity.SignInActivity"/>
         <activity
             android:name=".activity.DialogInputNameActivity"
             android:theme="@android:style/Theme.Dialog"/>
         <activity android:name=".activity.ManageActivity"/>
         <activity android:name=".activity.FaceDetailActivity">
+        </activity>
+        <activity android:name=".activity.AddFaceActivity">
         </activity>
     </application>
 

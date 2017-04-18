@@ -3,8 +3,6 @@ package com.henu.swface.VO;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import com.henu.swface.activity.VideoRecogniseActivity;
-
 import java.io.Serializable;
 
 import cn.bmob.v3.BmobObject;
@@ -126,11 +124,18 @@ public class UserHasSigned extends BmobObject implements Serializable{
 	public String toString() {
 		return "UserHasSigned{" +
 				"user_name='" + user_name + '\'' +
+				", objectId='"+getObjectId()+ '\'' +
 				", face_token1='" + face_token1 + '\'' +
 				", face_token2='" + face_token2 + '\'' +
 				", face_token3='" + face_token3 + '\'' +
 				", face_token4='" + face_token4 + '\'' +
 				", face_token5='" + face_token5 + '\'' +
+				", telephone='" + telephone + '\'' +
+				", face_url1='" + face_url1 + '\'' +
+				", face_url2='" + face_url2 + '\'' +
+				", face_url3='" + face_url3 + '\'' +
+				", face_url4='" + face_url4 + '\'' +
+				", face_url5='" + face_url5 + '\'' +
 				'}';
 	}
 }

@@ -31,6 +31,7 @@ public class BmobDataHelper {
 	private Context context;
 	private Handler myHandler;
 	private static final String TAG = BmobDataHelper.class.getSimpleName();
+
 	public BmobDataHelper(Context context, Handler myHandler) {
 		this.context = context;
 		this.myHandler = myHandler;
@@ -38,7 +39,7 @@ public class BmobDataHelper {
 		Bmob.initialize(context, "6e64317b6509bb503f7d9ab8404bf54c");
 	}
 
-	public void addUserHasSign(final UserHasSigned userHasSigned){
+	public void addUserHasSign(final UserHasSigned userHasSigned) {
 		userHasSigned.save(new SaveListener<String>() {
 			@Override
 			public void done(String s, BmobException e) {
@@ -46,7 +47,7 @@ public class BmobDataHelper {
 					Log.i(TAG, "userHasSigned.save: success");
 					DatabaseAdapter db = new DatabaseAdapter(context);
 					userHasSigned.setObjectId(s);
-					db.addUser_User(userHasSigned,myHandler);
+					db.addUser_User(userHasSigned, myHandler);
 					Log.i(TAG, "addUser_User: Success!");
 				} else {
 					Log.e(TAG, "userHasSigned.save: failed" + e);
@@ -58,7 +59,24 @@ public class BmobDataHelper {
 		});
 	}
 
-	public void findUserByFaceToken(final FaceSignIn faceSignIn){
+	public void addUserFace(UserHasSigned userHasSigned, String objectId) {
+		userHasSigned.update(objectId, new UpdateListener() {
+			@Override
+			public void done(BmobException e) {
+				if (e == null) {
+					Message message = Message.obtain();
+					message.arg1 = FinalUtil.ADD_FACE_SUCCESS;
+					myHandler.sendMessage(message);
+				} else {
+					Message message = Message.obtain();
+					message.arg1 = FinalUtil.ADD_FACE_IO_EXCEPTION;
+					myHandler.sendMessage(message);
+				}
+			}
+		});
+	}
+
+	public void findUserByFaceToken(final FaceSignIn faceSignIn) {
 		String facetoken = faceSignIn.getFace_token();
 		Log.i(TAG, "findUserByFaceToken: StartBmobSearch" + facetoken);
 		BmobQuery<UserHasSigned> query1 = new BmobQuery<>();
@@ -93,7 +111,7 @@ public class BmobDataHelper {
 					signLog.save(new SaveListener<String>() {
 						@Override
 						public void done(String s, BmobException e) {
-							if(e==null){
+							if (e == null) {
 								Message message = new Message();
 								message.arg1 = FinalUtil.SIGN_IN_SUCCESS;
 								Bundle bundle = new Bundle();
@@ -104,7 +122,7 @@ public class BmobDataHelper {
 								message.setData(bundle);
 								message.obj = userHasSigned1;
 								myHandler.sendMessage(message);
-							}else{
+							} else {
 								Message message = new Message();
 								message.arg1 = FinalUtil.SIGN_IN_FAILED_IOEXCEPTION;
 								myHandler.sendMessage(message);
@@ -120,14 +138,14 @@ public class BmobDataHelper {
 		});
 	}
 
-	public void updateUsername(final UserHasSigned userHasSigned, final String newUsername){
-		Log.i(TAG, "updateUsername: "+userHasSigned.getObjectId()+" "+newUsername);
+	public void updateUsername(final UserHasSigned userHasSigned, final String newUsername) {
+		Log.i(TAG, "updateUsername: " + userHasSigned.getObjectId() + " " + newUsername);
 		UserHasSigned newUserHasSigned = new UserHasSigned(context);
 		newUserHasSigned.setUser_name(newUsername);
-		newUserHasSigned.update(userHasSigned.getObjectId(),new UpdateListener() {
+		newUserHasSigned.update(userHasSigned.getObjectId(), new UpdateListener() {
 			@Override
 			public void done(BmobException e) {
-				if(e==null){
+				if (e == null) {
 					Log.i(TAG, "newUserHasSigned.update: success");
 					DatabaseAdapter db = new DatabaseAdapter(context);
 					userHasSigned.setUser_name(newUsername);
@@ -136,7 +154,7 @@ public class BmobDataHelper {
 					message.arg1 = FinalUtil.UPDATE_DETAIL_SUCCESS;
 					message.obj = newUsername;
 					myHandler.sendMessage(message);
-				}else{
+				} else {
 					Log.e(TAG, "newUserHasSigned.update: ", e);
 					Message message = new Message();
 					message.arg1 = FinalUtil.UPDATE_DETAIL_IO_EXCEPTION;

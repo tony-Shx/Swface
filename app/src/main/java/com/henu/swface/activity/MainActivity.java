@@ -1,8 +1,6 @@
 package com.henu.swface.activity;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -33,7 +31,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 	public void onClick(View v) {
 		switch (v.getId()){
 			case R.id.button_register:
-				Intent intent = new Intent(this,VideoRecogniseActivity.class);
+				Intent intent = new Intent(this,RegisterFaceActivity.class);
 				startActivity(intent);
 				break;
 			case R.id.button_sign_in:

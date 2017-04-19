@@ -1,8 +1,6 @@
 package com.henu.swface.Database;
 
-import android.content.ContentValues;
 import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -59,11 +57,14 @@ public class BmobDataHelper {
 		});
 	}
 
-	public void addUserFace(UserHasSigned userHasSigned, String objectId) {
+	public void addUserFace(final UserHasSigned userHasSigned, final String objectId) {
 		userHasSigned.update(objectId, new UpdateListener() {
 			@Override
 			public void done(BmobException e) {
 				if (e == null) {
+					userHasSigned.setObjectId(objectId);
+					DatabaseAdapter db = new DatabaseAdapter(context);
+					db.addUserFace_User(userHasSigned);
 					Message message = Message.obtain();
 					message.arg1 = FinalUtil.ADD_FACE_SUCCESS;
 					myHandler.sendMessage(message);
@@ -149,7 +150,7 @@ public class BmobDataHelper {
 					Log.i(TAG, "newUserHasSigned.update: success");
 					DatabaseAdapter db = new DatabaseAdapter(context);
 					userHasSigned.setUser_name(newUsername);
-					db.updateUserFaceDetail_User(userHasSigned);
+					db.updateUserFaceName_User(userHasSigned);
 					Message message = new Message();
 					message.arg1 = FinalUtil.UPDATE_DETAIL_SUCCESS;
 					message.obj = newUsername;

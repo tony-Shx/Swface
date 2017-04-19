@@ -16,9 +16,11 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.henu.swface.Adapter.ManageAdapter;
+import com.henu.swface.Database.DatabaseAdapter;
 import com.henu.swface.R;
 import com.henu.swface.VO.UserHasSigned;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import cn.bmob.v3.Bmob;
@@ -73,6 +75,18 @@ public class ManageActivity extends Activity {
                 if(e==null){
                     ManageAdapter adapter = new ManageAdapter(list);
                     recyclerView_manage.setAdapter(adapter);
+                    DatabaseAdapter db = new DatabaseAdapter(ManageActivity.this);
+                    ArrayList<UserHasSigned> mList = db.findAllUser_User();
+                    for(UserHasSigned userHasSigned:list){
+                        if(!mList.contains(userHasSigned)){
+                            Log.i(TAG, "mList.contains(userHasSigned): false");
+                            db.addUser_User(userHasSigned,null);
+                        }
+                    }
+                    mList = db.findAllUser_User();
+                    for(UserHasSigned userHasSigned:mList){
+                        Log.i(TAG, "done: "+userHasSigned.toString());
+                    }
                     dialog.dismiss();
                 }else{
                     Log.e(TAG, "query.findObjects: ", e);

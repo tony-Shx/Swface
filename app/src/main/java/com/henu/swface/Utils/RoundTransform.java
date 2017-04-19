@@ -31,7 +31,7 @@ public class RoundTransform implements Transformation {
 			source.recycle();
 		}
 
-		Bitmap bitmap = Bitmap.createBitmap(size, size, source.getConfig());
+		Bitmap bitmap = Bitmap.createBitmap(size, size, squaredBitmap.getConfig());
 
 		Canvas canvas = new Canvas(bitmap);
 		Paint paint = new Paint();
@@ -42,8 +42,6 @@ public class RoundTransform implements Transformation {
 
 		float r = size / 2f;
 		canvas.drawCircle(r, r, r, paint);
-
-		squaredBitmap.recycle();
 		return bitmap;
 	}
 

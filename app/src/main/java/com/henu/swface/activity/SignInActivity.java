@@ -169,7 +169,7 @@ public class SignInActivity extends BaseVideoActivity {
 						signLog.setUser_name(userHasSigned.getUser_name());
 						signLog.setConfidence(faceSignIn.getConfidence());
 						signLog.setTime(System.currentTimeMillis());
-						signLog.setFaceToken(userHasSigned.getFace_token1());
+						signLog.setFaceToken(faceSignIn.getFace_token());
 						final FaceSignIn finalFaceSignIn = faceSignIn;
 						signLog.save(new SaveListener<String>() {
 							@Override

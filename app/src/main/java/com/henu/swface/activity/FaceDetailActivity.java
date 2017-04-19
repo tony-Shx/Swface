@@ -22,6 +22,7 @@ import android.widget.Toast;
 
 import com.henu.swface.Adapter.FaceDetailAdapter;
 import com.henu.swface.Database.BmobDataHelper;
+import com.henu.swface.Database.DatabaseAdapter;
 import com.henu.swface.R;
 import com.henu.swface.Utils.FaceUtil;
 import com.henu.swface.Utils.FinalUtil;
@@ -48,10 +49,31 @@ public class FaceDetailActivity extends Activity implements View.OnClickListener
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_face_detail);
+		Intent intent = getIntent();
+		userHasSigned = (UserHasSigned) intent.getSerializableExtra("userHasSigned");
 		findView();
-		initDate();
 		setOnClick();
+	}
 
+	@Override
+	protected void onResume() {
+		super.onResume();
+		DatabaseAdapter db = new DatabaseAdapter(this);
+		UserHasSigned userHasSignedTemp = db.findUserByObiectId(userHasSigned.getObjectId());
+		if (userHasSignedTemp != null) {
+			userHasSigned.setFace_token1(userHasSignedTemp.getFace_token1());
+			userHasSigned.setFace_token2(userHasSignedTemp.getFace_token2());
+			userHasSigned.setFace_token3(userHasSignedTemp.getFace_token3());
+			userHasSigned.setFace_token4(userHasSignedTemp.getFace_token4());
+			userHasSigned.setFace_token5(userHasSignedTemp.getFace_token5());
+			userHasSigned.setFace_url1(userHasSignedTemp.getFace_url1());
+			userHasSigned.setFace_url2(userHasSignedTemp.getFace_url2());
+			userHasSigned.setFace_url3(userHasSignedTemp.getFace_url3());
+			userHasSigned.setFace_url4(userHasSignedTemp.getFace_url4());
+			userHasSigned.setFace_url5(userHasSignedTemp.getFace_url5());
+			userHasSignedTemp = null;
+		}
+		initDate();
 
 	}
 
@@ -66,12 +88,11 @@ public class FaceDetailActivity extends Activity implements View.OnClickListener
 	}
 
 	private void initDate() {
-		Intent intent = getIntent();
-		userHasSigned = (UserHasSigned) intent.getSerializableExtra("userHasSigned");
 		toolbar.setNavigationIcon(R.mipmap.button_back);
 		toolbar.setTitle(userHasSigned.getUser_name() + "的详细信息");
 		toolbar.inflateMenu(R.menu.base_toolbar_menu);
 		File imageFile = new File(FaceUtil.getPictureStoragePath(this), userHasSigned.getFace_token1() + ".jpg");
+		imageList.clear();
 		if (imageFile.exists()) {
 			Uri imageUri1 = Uri.fromFile(imageFile);
 			imageList.add(imageUri1);
@@ -87,26 +108,32 @@ public class FaceDetailActivity extends Activity implements View.OnClickListener
 		if (imageurl != null && !imageurl.isEmpty() && !imageurl.equals("")) {
 			Uri imageUrl2 = Uri.parse(imageurl);
 			imageList.add(imageUrl2);
-			imageurl = userHasSigned.getFace_url3();
-			if (imageurl != null && !imageurl.isEmpty() && !imageurl.equals("")) {
-				Uri imageUrl3 = Uri.parse(imageurl);
-				imageList.add(imageUrl3);
-				imageurl = userHasSigned.getFace_url4();
-				if (imageurl != null && !imageurl.isEmpty() && !imageurl.equals("")) {
-					Uri imageUrl4 = Uri.parse(imageurl);
-					imageList.add(imageUrl4);
-					imageurl = userHasSigned.getFace_url5();
-					if (imageurl != null && !imageurl.isEmpty() && !imageurl.equals("")) {
-						Uri imageUrl5 = Uri.parse(imageurl);
-						imageList.add(imageUrl5);
-					}
-				}
-			}
 		}
-		FaceDetailAdapter adapter = new FaceDetailAdapter(imageList,userHasSigned);
+		imageurl = userHasSigned.getFace_url3();
+		if (imageurl != null && !imageurl.isEmpty() && !imageurl.equals("")) {
+			Uri imageUrl3 = Uri.parse(imageurl);
+			imageList.add(imageUrl3);
+		}
+		imageurl = userHasSigned.getFace_url4();
+		if (imageurl != null && !imageurl.isEmpty() && !imageurl.equals("")) {
+			Uri imageUrl4 = Uri.parse(imageurl);
+			imageList.add(imageUrl4);
+		}
+		imageurl = userHasSigned.getFace_url5();
+		if (imageurl != null && !imageurl.isEmpty() && !imageurl.equals("")) {
+			Uri imageUrl5 = Uri.parse(imageurl);
+			imageList.add(imageUrl5);
+		}
+		FaceDetailAdapter adapter = new FaceDetailAdapter(imageList, userHasSigned);
 		StaggeredGridLayoutManager layoutManager = new StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL);
 		recyclerView_face_detail.setLayoutManager(layoutManager);
 		recyclerView_face_detail.setAdapter(adapter);
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+		Log.i(TAG, "onPause: ");
 	}
 
 	private void findView() {
@@ -167,17 +194,15 @@ public class FaceDetailActivity extends Activity implements View.OnClickListener
 	private Handler myHandler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
-			switch (msg.arg1){
+			switch (msg.arg1) {
 				case FinalUtil.UPDATE_DETAIL_SUCCESS:
-					Toast.makeText(getApplicationContext(),"重命名成功",Toast.LENGTH_LONG).show();
-//					String newUsername = (String) msg.obj;
-//					userHasSigned.setUser_name(newUsername);
+					Toast.makeText(getApplicationContext(), "重命名成功", Toast.LENGTH_LONG).show();
 					String username = userHasSigned.getUser_name();
 					textView_face_detail_name.setText(username);
-					toolbar.setTitle(username+"的详细信息");
+					toolbar.setTitle(username + "的详细信息");
 					break;
 				case FinalUtil.UPDATE_DETAIL_IO_EXCEPTION:
-					Toast.makeText(getApplicationContext(),"网络异常，重命名失败",Toast.LENGTH_LONG).show();
+					Toast.makeText(getApplicationContext(), "网络异常，重命名失败", Toast.LENGTH_LONG).show();
 					break;
 				default:
 					break;

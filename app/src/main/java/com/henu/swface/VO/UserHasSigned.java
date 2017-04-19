@@ -11,12 +11,12 @@ import cn.bmob.v3.BmobObject;
  * Created by Administrator on 2017/3/29.
  */
 
-public class UserHasSigned extends BmobObject implements Serializable{
-	private String user_name, face_token1, face_token2, face_token3, face_token4, face_token5,telephone,face_url1,face_url2,face_url3,face_url4,face_url5;
+public class UserHasSigned extends BmobObject implements Serializable {
+	private String user_name, face_token1, face_token2, face_token3, face_token4, face_token5, telephone, face_url1, face_url2, face_url3, face_url4, face_url5;
 
 	public UserHasSigned(Context context) {
-		SharedPreferences preferences = context.getSharedPreferences("login",Context.MODE_PRIVATE);
-		telephone = preferences.getString("username","default");
+		SharedPreferences preferences = context.getSharedPreferences("login", Context.MODE_PRIVATE);
+		telephone = preferences.getString("username", "default");
 	}
 
 	public String getTelephone() {
@@ -121,10 +121,20 @@ public class UserHasSigned extends BmobObject implements Serializable{
 	}
 
 	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof UserHasSigned) {
+			UserHasSigned userHasSigned = (UserHasSigned) obj;
+			return userHasSigned.getObjectId().equals(getObjectId());
+		}else {
+			return false;
+		}
+	}
+
+	@Override
 	public String toString() {
 		return "UserHasSigned{" +
 				"user_name='" + user_name + '\'' +
-				", objectId='"+getObjectId()+ '\'' +
+				", objectId='" + getObjectId() + '\'' +
 				", face_token1='" + face_token1 + '\'' +
 				", face_token2='" + face_token2 + '\'' +
 				", face_token3='" + face_token3 + '\'' +

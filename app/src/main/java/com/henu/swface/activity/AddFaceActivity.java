@@ -171,7 +171,12 @@ public class AddFaceActivity extends BaseVideoActivity {
 					break;
 				case FinalUtil.DETECT_FAILED_IO_EXCEPTION:
 					dialog.cancel();
+					File imageFile = new File(FaceUtil.getPictureStoragePath(null),"waitForRename.jpg");
+					if(imageFile.exists()){
+						imageFile.delete();
+					}
 					showNormalDialog("温馨提示：", "添加失败！\n请检查网络连接！！", false, null, true);
+
 					break;
 				case FinalUtil.DETECT_FAILED_NO_FACE:
 					AlertDialog.Builder newdialog = new AlertDialog.Builder(AddFaceActivity.this);

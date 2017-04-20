@@ -43,6 +43,7 @@ public class FaceDetailActivity extends Activity implements View.OnClickListener
 	private Toolbar toolbar;
 	private List<Uri> imageList = new ArrayList<>();
 	private UserHasSigned userHasSigned;
+	private int position;
 	private static final String TAG = FaceDetailActivity.class.getSimpleName();
 
 	@Override
@@ -51,7 +52,10 @@ public class FaceDetailActivity extends Activity implements View.OnClickListener
 		setContentView(R.layout.activity_face_detail);
 		Intent intent = getIntent();
 		userHasSigned = (UserHasSigned) intent.getSerializableExtra("userHasSigned");
+		position = intent.getIntExtra("position",-1);
 		findView();
+		toolbar.setNavigationIcon(R.mipmap.button_back);
+		toolbar.inflateMenu(R.menu.base_toolbar_menu);
 		setOnClick();
 	}
 
@@ -88,9 +92,7 @@ public class FaceDetailActivity extends Activity implements View.OnClickListener
 	}
 
 	private void initDate() {
-		toolbar.setNavigationIcon(R.mipmap.button_back);
 		toolbar.setTitle(userHasSigned.getUser_name() + "的详细信息");
-		toolbar.inflateMenu(R.menu.base_toolbar_menu);
 		File imageFile = new File(FaceUtil.getPictureStoragePath(this), userHasSigned.getFace_token1() + ".jpg");
 		imageList.clear();
 		if (imageFile.exists()) {
@@ -103,7 +105,7 @@ public class FaceDetailActivity extends Activity implements View.OnClickListener
 			Picasso.with(this).load(userHasSigned.getFace_url1()).transform(new RoundTransform()).centerCrop().resize(90, 120).placeholder(R.mipmap.loading).into(imageView_face_detail_head);
 		}
 		textView_face_detail_name.setText(userHasSigned.getUser_name());
-		textView_face_detail_register_time.setText(userHasSigned.getCreatedAt());
+		textView_face_detail_register_time.setText(userHasSigned.getCreated_at());
 		String imageurl = userHasSigned.getFace_url2();
 		if (imageurl != null && !imageurl.isEmpty() && !imageurl.equals("")) {
 			Uri imageUrl2 = Uri.parse(imageurl);
@@ -194,6 +196,7 @@ public class FaceDetailActivity extends Activity implements View.OnClickListener
 	private Handler myHandler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
+
 			switch (msg.arg1) {
 				case FinalUtil.UPDATE_DETAIL_SUCCESS:
 					Toast.makeText(getApplicationContext(), "重命名成功", Toast.LENGTH_LONG).show();
@@ -207,7 +210,17 @@ public class FaceDetailActivity extends Activity implements View.OnClickListener
 				default:
 					break;
 			}
+			Intent intent = new Intent();
+			intent.putExtra("userHasSigned",userHasSigned);
+			intent.putExtra("position",position);
+			setResult(0,intent);
 		}
 	};
+
+	@Override
+	protected void onStop() {
+		super.onStop();
+
+	}
 
 }

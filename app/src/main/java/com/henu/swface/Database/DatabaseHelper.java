@@ -24,7 +24,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             "smile REAL,facequality REAL,face_token TEXT,image_path TEXT)";
     private static final String DROP_TABLE_FACES = "DROP TABLE IF EXISTS Faces";
     private static final String CREATE_TABLE_USER = "CREATE TABLE IF NOT EXISTS UserHasSigned(object_id TEXT PRIMARY KEY," +
-            "user_name TEXT,face_token1 TEXT,face_token2 TEXT,face_token3 TEXT,face_token4 TEXT,face_token5 TEXT,face_url1 TEXT,face_url2 TEXT,face_url3 TEXT,face_url4 TEXT,face_url5 TEXT)";
+            "user_name TEXT,face_token1 TEXT,face_token2 TEXT,face_token3 TEXT,face_token4 TEXT,face_token5 TEXT,face_url1 TEXT," +
+            "face_url2 TEXT,face_url3 TEXT,face_url4 TEXT,face_url5 TEXT,created_at TEXT,updated_at TEXT)";
     private static final String DROP_TABLE_USER = "DROP TABLE IF EXISTS UserHasSigned";
     private static final String CREATE_TABLE_SIGNLOG = "CREATE TABLE IF NOT EXISTS SignLog(id INTEGER PRIMARY KEY AUTOINCREMENT," +
             "user_name TEXT,confidence REAL,time NUMERIC)";

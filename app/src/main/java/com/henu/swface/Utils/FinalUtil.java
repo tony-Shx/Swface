@@ -26,4 +26,8 @@ public final class FinalUtil {
 	public final static int ADD_FACE_IO_EXCEPTION = 0X401;
 	public final static int ADD_FACE_TO_FACESET_SUCCESS = 0X410;
 	public final static int ADD_FACE_TO_FACESET_EXCEPTION = 0X411;
+
+	public final static int SYN_DATA_SUCCESS = 0x500;
+	public final static int SYN_DATA_FAILED = 0x501;
+
 }

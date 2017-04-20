@@ -29,6 +29,9 @@ public class ManageAdapter extends RecyclerView.Adapter<ManageAdapter.ViewHolder
 
 	private List<UserHasSigned> userHasSignedList;
 	private int imageView_width = -1;
+	private OnItemClickListener onItemClickListener;
+	private OnItemLongClickListener onItemLongClickListener;
+
 
 	public ManageAdapter(List<UserHasSigned> userHasSignedList) {
 		this.userHasSignedList = userHasSignedList;
@@ -38,43 +41,60 @@ public class ManageAdapter extends RecyclerView.Adapter<ManageAdapter.ViewHolder
 	public ViewHolder onCreateViewHolder(final ViewGroup parent, int viewType) {
 		final Context context = parent.getContext();
 		//获取屏幕宽度便于动态改变imageview长宽
-		if(imageView_width<0){
-			imageView_width = (parent.getWidth()-60) / 3;
+		if (imageView_width < 0) {
+			imageView_width = (parent.getWidth() - 60) / 3;
 		}
 		View view = LayoutInflater.from(context).inflate(R.layout.recycleview_manage_item, parent, false);
 		final ViewHolder viewHolder = new ViewHolder(view);
-		viewHolder.imageView_face_item.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				Intent intent  =new Intent(context, FaceDetailActivity.class);
-				int position = viewHolder.getAdapterPosition();
-				intent.putExtra("userHasSigned",userHasSignedList.get(position));
-				context.startActivity(intent);
-			}
-		});
-		viewHolder.recyclerView_manage_item_face_name.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				Intent intent  =new Intent(context, FaceDetailActivity.class);
-				int position = viewHolder.getAdapterPosition();
-				intent.putExtra("userHasSigned",userHasSignedList.get(position));
-				context.startActivity(intent);
-			}
-		});
+		if (onItemClickListener != null) {
+			viewHolder.imageView_face_item.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View view) {
+					int position = viewHolder.getAdapterPosition();
+					onItemClickListener.onItemClick(view, position);
+				}
+			});
+			viewHolder.recyclerView_manage_item_face_name.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View view) {
+					int position = viewHolder.getAdapterPosition();
+					onItemClickListener.onItemClick(view, position);
+				}
+			});
+		}
+
 		return viewHolder;
 	}
-
 
 
 	@Override
 	public void onBindViewHolder(ViewHolder holder, int position) {
 		Context context = holder.itemView.getContext();
 		UserHasSigned user = userHasSignedList.get(position);
-		File file = new File(FaceUtil.getPictureStoragePath(null), user.getFace_token1() + ".jpg");
+		File file = null;
+		String url = "";
+		if (user.getFace_token1() != null && !user.getFace_token1().isEmpty() && !user.getFace_token1().equals("")) {
+			file = new File(FaceUtil.getPictureStoragePath(null), user.getFace_token1() + ".jpg");
+			url = user.getFace_url1();
+		}else if (user.getFace_token2() != null && !user.getFace_token2().isEmpty() && !user.getFace_token2().equals("")) {
+			file = new File(FaceUtil.getPictureStoragePath(null), user.getFace_token2() + ".jpg");
+			url = user.getFace_url2();
+		}else if (user.getFace_token3() != null && !user.getFace_token3().isEmpty() && !user.getFace_token3().equals("")) {
+			file = new File(FaceUtil.getPictureStoragePath(null), user.getFace_token3() + ".jpg");
+			url = user.getFace_url3();
+		}else if (user.getFace_token4() != null && !user.getFace_token4().isEmpty() && !user.getFace_token4().equals("")) {
+			file = new File(FaceUtil.getPictureStoragePath(null), user.getFace_token4() + ".jpg");
+			url = user.getFace_url4();
+		}else if (user.getFace_token5() != null && !user.getFace_token5().isEmpty() && !user.getFace_token5().equals("")) {
+			file = new File(FaceUtil.getPictureStoragePath(null), user.getFace_token5() + ".jpg");
+			url = user.getFace_url5();
+		}else{
+			file = new File(FaceUtil.getPictureStoragePath(null),"Void");
+		}
 		if (file.exists()) {
 			Picasso.with(context).load(file).centerCrop().transform(new RoundTransform()).placeholder(R.mipmap.loading).resize(120, 180).into(holder.imageView_face_item);
 		} else {
-			Picasso.with(context).load(user.getFace_url1()).centerCrop().placeholder(R.mipmap.loading).resize(120, 180).transform(new RoundTransform()).into(holder.imageView_face_item);
+			Picasso.with(context).load(url).centerCrop().placeholder(R.mipmap.loading).resize(120, 180).transform(new RoundTransform()).into(holder.imageView_face_item);
 		}
 		if (imageView_width > 0) {
 			//动态改变imageview长宽使其保持正方形
@@ -101,6 +121,22 @@ public class ManageAdapter extends RecyclerView.Adapter<ManageAdapter.ViewHolder
 			recyclerView_manage_item_face_name = (TextView) itemView.findViewById(R.id.recyclerView_manage_item_face_name);
 
 		}
+	}
+
+	public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
+		this.onItemClickListener = onItemClickListener;
+	}
+
+	public void setOnItemClickListener(OnItemLongClickListener onItemLongClickListener){
+		this.onItemLongClickListener = onItemLongClickListener;
+	}
+
+	public interface OnItemClickListener {
+		void onItemClick(View view, int position);
+	}
+
+	public interface OnItemLongClickListener{
+		void onItemLongClick(View view,int position);
 	}
 
 }

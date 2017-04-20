@@ -219,6 +219,12 @@ public class DatabaseAdapter {
 		if (userHasSigned.getFace_token5() != null && !userHasSigned.getFace_token5().isEmpty()) {
 			contentValues.put(UserMetaData.UserTable.FACE_TOKEN5, userHasSigned.getFace_token5());
 		}
+		if (userHasSigned.getCreatedAt() != null && !userHasSigned.getCreatedAt().isEmpty()) {
+			contentValues.put(UserMetaData.UserTable.CREATED_AT, userHasSigned.getCreatedAt());
+		}
+		if (userHasSigned.getUpdatedAt() != null && !userHasSigned.getUpdatedAt().isEmpty()) {
+			contentValues.put(UserMetaData.UserTable.UPDATED_AT, userHasSigned.getUpdatedAt());
+		}
 		db.insert(UserMetaData.UserTable.TABLE_NAME, UserMetaData.UserTable.USER_NAME, contentValues);
 		db.close();
 		Log.i(TAG, "addUser_User: success!");
@@ -252,6 +258,8 @@ public class DatabaseAdapter {
 			userHasSigned.setFace_url3(cursor.getString(cursor.getColumnIndex("face_url3")));
 			userHasSigned.setFace_url4(cursor.getString(cursor.getColumnIndex("face_url4")));
 			userHasSigned.setFace_url5(cursor.getString(cursor.getColumnIndex("face_url5")));
+			userHasSigned.setUpdated_at(cursor.getString(cursor.getColumnIndex("updated_at")));
+			userHasSigned.setCreated_at(cursor.getString(cursor.getColumnIndex("created_at")));
 			list.add(userHasSigned);
 		}
 		cursor.close();
@@ -277,6 +285,8 @@ public class DatabaseAdapter {
 			userHasSigned.setFace_url4(cursor.getString(cursor.getColumnIndex("face_url4")));
 			userHasSigned.setFace_url5(cursor.getString(cursor.getColumnIndex("face_url5")));
 			userHasSigned.setObjectId(cursor.getString(cursor.getColumnIndex("object_id")));
+			userHasSigned.setUpdated_at(cursor.getString(cursor.getColumnIndex("updated_at")));
+			userHasSigned.setCreated_at(cursor.getString(cursor.getColumnIndex("created_at")));
 		}
 		return userHasSigned;
 	}
@@ -306,18 +316,25 @@ public class DatabaseAdapter {
 		if (userHasSigned.getFace_url1() != null) {
 			values.put(UserMetaData.UserTable.FACE_URL1, userHasSigned.getFace_url1());
 			values.put(UserMetaData.UserTable.FACE_TOKEN1, userHasSigned.getFace_token1());
-		} else if (userHasSigned.getFace_url2() != null) {
+		}
+		if (userHasSigned.getFace_url2() != null) {
 			values.put(UserMetaData.UserTable.FACE_URL2, userHasSigned.getFace_url2());
 			values.put(UserMetaData.UserTable.FACE_TOKEN2, userHasSigned.getFace_token2());
-		} else if (userHasSigned.getFace_url3() != null) {
+		}
+		if (userHasSigned.getFace_url3() != null) {
 			values.put(UserMetaData.UserTable.FACE_URL3, userHasSigned.getFace_url3());
 			values.put(UserMetaData.UserTable.FACE_TOKEN3, userHasSigned.getFace_token3());
-		} else if (userHasSigned.getFace_url4() != null) {
+		}
+		if (userHasSigned.getFace_url4() != null) {
 			values.put(UserMetaData.UserTable.FACE_URL4, userHasSigned.getFace_url4());
 			values.put(UserMetaData.UserTable.FACE_TOKEN4, userHasSigned.getFace_token4());
-		} else {
+		}
+		if (userHasSigned.getFace_url5()!=null){
 			values.put(UserMetaData.UserTable.FACE_URL5, userHasSigned.getFace_url5());
 			values.put(UserMetaData.UserTable.FACE_TOKEN5, userHasSigned.getFace_token5());
+		}
+		if(userHasSigned.getUpdatedAt()!=null){
+			values.put(UserMetaData.UserTable.UPDATED_AT,userHasSigned.getUpdatedAt());
 		}
 		String whereClause = UserMetaData.UserTable.OBJECT_ID + "=?";
 		String[] args = {userHasSigned.getObjectId()};
@@ -330,6 +347,9 @@ public class DatabaseAdapter {
 		SQLiteDatabase db = databaseHelper.getWritableDatabase();
 		ContentValues values = new ContentValues();
 		values.put(UserMetaData.UserTable.USER_NAME, userHasSigned.getUser_name());
+		if(userHasSigned.getUpdatedAt()!=null){
+			values.put(UserMetaData.UserTable.UPDATED_AT,userHasSigned.getUpdatedAt());
+		}
 		String whereClause = UserMetaData.UserTable.OBJECT_ID + "=?";
 		String[] args = {userHasSigned.getObjectId()};
 		db.update(UserMetaData.UserTable.TABLE_NAME, values, whereClause, args);

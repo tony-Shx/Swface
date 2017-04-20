@@ -23,6 +23,8 @@ public final class UserMetaData {
 		public static final String FACE_URL3 = "face_url3";
 		public static final String FACE_URL4 = "face_url4";
 		public static final String FACE_URL5 = "face_url5";
+		public static final String CREATED_AT = "created_at";
+		public static final String UPDATED_AT = "updated_at";
 	}
 
 }

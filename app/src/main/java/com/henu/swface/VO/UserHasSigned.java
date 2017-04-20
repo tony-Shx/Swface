@@ -12,7 +12,7 @@ import cn.bmob.v3.BmobObject;
  */
 
 public class UserHasSigned extends BmobObject implements Serializable {
-	private String user_name, face_token1, face_token2, face_token3, face_token4, face_token5, telephone, face_url1, face_url2, face_url3, face_url4, face_url5;
+	private String user_name, face_token1, face_token2, face_token3, face_token4, face_token5, telephone, face_url1, face_url2, face_url3, face_url4, face_url5,created_at,updated_at;
 
 	public UserHasSigned(Context context) {
 		SharedPreferences preferences = context.getSharedPreferences("login", Context.MODE_PRIVATE);
@@ -30,6 +30,26 @@ public class UserHasSigned extends BmobObject implements Serializable {
 		this.face_token3 = face_token3;
 		this.face_token4 = face_token4;
 		this.face_token5 = face_token5;
+	}
+
+	public void setTelephone(String telephone) {
+		this.telephone = telephone;
+	}
+
+	public String getCreated_at() {
+		return created_at;
+	}
+
+	public void setCreated_at(String created_at) {
+		this.created_at = created_at;
+	}
+
+	public String getUpdated_at() {
+		return updated_at;
+	}
+
+	public void setUpdated_at(String updated_at) {
+		this.updated_at = updated_at;
 	}
 
 	public String getFace_url1() {
@@ -134,7 +154,6 @@ public class UserHasSigned extends BmobObject implements Serializable {
 	public String toString() {
 		return "UserHasSigned{" +
 				"user_name='" + user_name + '\'' +
-				", objectId='" + getObjectId() + '\'' +
 				", face_token1='" + face_token1 + '\'' +
 				", face_token2='" + face_token2 + '\'' +
 				", face_token3='" + face_token3 + '\'' +
@@ -146,6 +165,8 @@ public class UserHasSigned extends BmobObject implements Serializable {
 				", face_url3='" + face_url3 + '\'' +
 				", face_url4='" + face_url4 + '\'' +
 				", face_url5='" + face_url5 + '\'' +
+				", created_at='" + created_at + '\'' +
+				", updated_at='" + updated_at + '\'' +
 				'}';
 	}
 }

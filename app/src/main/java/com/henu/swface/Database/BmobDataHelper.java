@@ -164,4 +164,26 @@ public class BmobDataHelper {
 			}
 		});
 	}
+
+	public void deleteUserFace(final String object, final String faceToken, final String faceUrl){
+		UserHasSigned userHasSigned = new UserHasSigned(context);
+		userHasSigned.setObjectId(object);
+		userHasSigned.remove(faceToken);
+		userHasSigned.remove(faceUrl);
+		userHasSigned.update(new UpdateListener() {
+			@Override
+			public void done(BmobException e) {
+				if(e==null){
+					DatabaseAdapter db = new DatabaseAdapter(context);
+					db.deleteUserFace_User(object,faceToken,faceUrl,myHandler);
+				}else{
+					Log.e(TAG, "deleteUserFace: ", e);
+					Message message = Message.obtain();
+					message.arg1 = FinalUtil.REMOVE_FACE_BMOB_EXCEPTION;
+					myHandler.sendMessage(message);
+				}
+			}
+		});
+
+	}
 }

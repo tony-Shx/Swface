@@ -28,9 +28,11 @@ import android.widget.Toast;
 import com.henu.swface.Database.BmobDataHelper;
 import com.henu.swface.Database.DatabaseAdapter;
 import com.henu.swface.R;
+import com.henu.swface.Utils.FaceSetUtil;
 import com.henu.swface.Utils.FaceUtil;
 import com.henu.swface.Utils.FinalUtil;
 import com.henu.swface.Utils.JSONUtil;
+import com.henu.swface.Utils.PictureUtil;
 import com.henu.swface.VO.Face;
 import com.henu.swface.VO.UserHasSigned;
 
@@ -53,8 +55,6 @@ import retrofit2.http.Url;
  */
 public class AddFaceActivity extends BaseVideoActivity {
 
-	private final static String API_KEY = "lJsij4n8pYEj3bW-tSJqEhRgkdfHobC8";
-	private final static String API_Secret = "i1H3kRBBzJ2Wo_1T-6RsbRmWgcHAREww";
 	private final static String TAG = AddFaceActivity.class.getSimpleName();
 	private AlertDialog dialog = null;
 	private Button button_take_photos;
@@ -96,7 +96,7 @@ public class AddFaceActivity extends BaseVideoActivity {
 			FileOutputStream fos;
 			//获取拍到的图片Bitmap
 			Bitmap bitmap_source = null;
-			String pictureStoragePath = FaceUtil.getPictureStoragePath(getApplicationContext());
+			String pictureStoragePath = PictureUtil.getPictureStoragePath(getApplicationContext());
 			File f = new File(pictureStoragePath, filename);
 			try {
 				fos = new FileOutputStream(f);
@@ -108,7 +108,7 @@ public class AddFaceActivity extends BaseVideoActivity {
 							100, fos);
 					Log.i(TAG, "onPictureTaken_data.length<20000: " + data.length);
 					Log.i(TAG, "onPictureTaken_nv21.length: " + nv21.length);
-					bitmap_source = FaceUtil.compressFacePhoto(f.getAbsolutePath());
+					bitmap_source = PictureUtil.compressFacePhoto(f.getAbsolutePath());
 					fos = new FileOutputStream(f);
 					BufferedOutputStream bos = new BufferedOutputStream(fos);
 					//旋转图片
@@ -121,7 +121,7 @@ public class AddFaceActivity extends BaseVideoActivity {
 					bos.close();
 					Log.i(TAG, "onPictureTaken_mBitmap1.compress: "+result);
 				} else {
-					bitmap_source = FaceUtil.compressFacePhoto(data);
+					bitmap_source = PictureUtil.compressFacePhoto(data);
 					BufferedOutputStream bos = new BufferedOutputStream(fos);
 					//旋转图片
 					// 根据旋转角度，生成旋转矩阵
@@ -171,7 +171,7 @@ public class AddFaceActivity extends BaseVideoActivity {
 					break;
 				case FinalUtil.DETECT_FAILED_IO_EXCEPTION:
 					dialog.cancel();
-					File imageFile = new File(FaceUtil.getPictureStoragePath(null),"waitForRename.jpg");
+					File imageFile = new File(PictureUtil.getPictureStoragePath(null),"waitForRename.jpg");
 					if(imageFile.exists()){
 						imageFile.delete();
 					}
@@ -244,9 +244,9 @@ public class AddFaceActivity extends BaseVideoActivity {
 				String outerId = sp.getString("username", "default");
 				int attempt = 0;
 				String faceToken = face.getFace_token();
-				Response response1 = FaceUtil.createFaceSet(API_KEY, API_Secret, "default", outerId, faceToken);
+				Response response1 = FaceSetUtil.createFaceSet(FinalUtil.API_KEY, FinalUtil.API_Secret, "default", outerId, faceToken);
 				while (response1 != null && response1.code() != 200 && attempt < 10) {
-					response1 = FaceUtil.createFaceSet(API_KEY, API_Secret, "default", outerId, faceToken);
+					response1 = FaceSetUtil.createFaceSet(FinalUtil.API_KEY, FinalUtil.API_Secret, "default", outerId, faceToken);
 					attempt++;
 					Log.e(TAG, "createFaceSet_attempt: " + attempt);
 					try {
@@ -280,7 +280,7 @@ public class AddFaceActivity extends BaseVideoActivity {
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
-				Response response = FaceUtil.detectFace(imageFile, API_KEY, API_Secret);
+				Response response = FaceUtil.detectFace(imageFile, FinalUtil.API_KEY, FinalUtil.API_Secret);
 				if (null==response){
 					Message message = new Message();
 					message.arg1 = FinalUtil.DETECT_FAILED_IO_EXCEPTION;
@@ -290,7 +290,7 @@ public class AddFaceActivity extends BaseVideoActivity {
 
 				int attempt = 0;
 				while (response.code() != 200 && attempt < 5) {
-					response = FaceUtil.detectFace(imageFile, API_KEY, API_Secret);
+					response = FaceUtil.detectFace(imageFile, FinalUtil.API_KEY, FinalUtil.API_Secret);
 					attempt++;
 					try {
 						Thread.sleep(50);
@@ -312,13 +312,14 @@ public class AddFaceActivity extends BaseVideoActivity {
 					message.arg1 = FinalUtil.DETECT_FAILED_NO_FACE;
 					myhandler.sendMessage(message);
 				} else {
-					File newFile = new File(FaceUtil.getPictureStoragePath(getApplicationContext()), face.getFace_token() + ".jpg");
+					File newFile = new File(PictureUtil.getPictureStoragePath(getApplicationContext()), face.getFace_token() + ".jpg");
 					if (!imageFile.renameTo(newFile)) {
 						showNormalDialog(null, "文件重命名失败，请检查磁盘空间是否充足？", false, null, true);
 						return;
 					}
 					face.setImage_path(newFile.getAbsolutePath());
 					DatabaseAdapter db = new DatabaseAdapter(getApplicationContext());
+					Log.i(TAG, "run1: "+face.getFace_token());
 					db.addFace_Faces(face);
 					db = null;
 					//上传图片到BMOB数据库

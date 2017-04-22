@@ -1,12 +1,16 @@
 package com.henu.swface.activity;
 
 import android.app.Activity;
+import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.Vibrator;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
@@ -17,6 +21,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,16 +29,21 @@ import com.henu.swface.Adapter.FaceDetailAdapter;
 import com.henu.swface.Database.BmobDataHelper;
 import com.henu.swface.Database.DatabaseAdapter;
 import com.henu.swface.R;
+import com.henu.swface.Utils.FaceSetUtil;
 import com.henu.swface.Utils.FaceUtil;
 import com.henu.swface.Utils.FinalUtil;
+import com.henu.swface.Utils.PictureUtil;
 import com.henu.swface.Utils.RoundTransform;
 import com.henu.swface.VO.UserHasSigned;
 import com.iflytek.cloud.thirdparty.L;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import okhttp3.Response;
 
 public class FaceDetailActivity extends Activity implements View.OnClickListener {
 	private ImageView imageView_face_detail_head;
@@ -44,6 +54,9 @@ public class FaceDetailActivity extends Activity implements View.OnClickListener
 	private List<Uri> imageList = new ArrayList<>();
 	private UserHasSigned userHasSigned;
 	private int position;
+	private boolean edit_face = false;
+	private FaceDetailAdapter faceDetailAdapter;
+	private Dialog dialog;
 	private static final String TAG = FaceDetailActivity.class.getSimpleName();
 
 	@Override
@@ -52,11 +65,10 @@ public class FaceDetailActivity extends Activity implements View.OnClickListener
 		setContentView(R.layout.activity_face_detail);
 		Intent intent = getIntent();
 		userHasSigned = (UserHasSigned) intent.getSerializableExtra("userHasSigned");
-		position = intent.getIntExtra("position",-1);
+		position = intent.getIntExtra("position", -1);
 		findView();
 		toolbar.setNavigationIcon(R.mipmap.button_back);
 		toolbar.inflateMenu(R.menu.base_toolbar_menu);
-		setOnClick();
 	}
 
 	@Override
@@ -78,6 +90,7 @@ public class FaceDetailActivity extends Activity implements View.OnClickListener
 			userHasSignedTemp = null;
 		}
 		initDate();
+		setOnClick();
 
 	}
 
@@ -89,11 +102,129 @@ public class FaceDetailActivity extends Activity implements View.OnClickListener
 			}
 		});
 		button_face_detail_edit.setOnClickListener(this);
+		if (faceDetailAdapter != null) {
+			final FaceDetailAdapter adapter = faceDetailAdapter;
+			adapter.setOnItemLongClickListener(new FaceDetailAdapter.OnItemLongClickListener() {
+				@Override
+				public void onItemLongClick(View view) {
+					Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+					long[] pattern = {0, 100};
+					Log.i(TAG, "onItemLongClick_vibrate: ");
+					vibrator.vibrate(pattern, 1);
+					adapter.notifyDataSetChanged();
+					edit_face = true;
+				}
+			});
+			adapter.setOnDeleteClickListener(new FaceDetailAdapter.OnDeleteClickListener() {
+				@Override
+				public void onDeleteClick(View view, final int index) {
+					if (edit_face) {
+						AlertDialog.Builder builder = new AlertDialog.Builder(FaceDetailActivity.this);
+						builder.setTitle("删除提醒");
+						builder.setMessage("确定要删除此照片？");
+						builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialogInterface, int i) {
+								new Thread(new Runnable() {
+									@Override
+									public void run() {
+										startDeleteFace(index);
+									}
+								}).start();
+								dialogInterface.dismiss();
+								showNormalDialog(null,"正在删除，请稍后...",false,new ProgressBar(FaceDetailActivity.this),false);
+							}
+						});
+						builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialogInterface, int i) {
+								dialogInterface.dismiss();
+							}
+						});
+						builder.show();
+
+					}
+				}
+			});
+		}
 	}
+
+	private void startDeleteFace(int index) {
+		String faceTokenAndUrl = getFaceTokenAndUrl(index);
+		if (!faceTokenAndUrl.equals("")) {
+			String[] face = faceTokenAndUrl.split("#");
+			//// TODO: 2017/4/21 在这里调用删除的具体操作！！！
+			String out_id = getOutId();
+			Response response = FaceSetUtil.removeFaceFormFaceSet(FinalUtil.API_KEY, FinalUtil.API_Secret, out_id, face[0]);
+			if (response == null || response.code() != 200) {
+				Message message = Message.obtain();
+				message.arg1 = FinalUtil.REMOVE_FACE_IO_EXCEPTION;
+				myHandler.sendMessage(message);
+				return;
+			}
+			String JSON = "";
+			try {
+				JSON = response.body().string();
+				Log.i(TAG, "startDeleteFace_JSON: " + JSON);
+			} catch (IOException e) {
+				Log.e(TAG, "startDeleteFace: ", e);
+				e.printStackTrace();
+			}
+			if (JSON.isEmpty() || JSON.contains("error_message")) {
+				Message message = Message.obtain();
+				message.arg1 = FinalUtil.REMOVE_FACE_IO_EXCEPTION;
+				myHandler.sendMessage(message);
+				return;
+			}
+			BmobDataHelper db = new BmobDataHelper(this, myHandler);
+			if (face.length > 2) {
+				db.deleteUserFace(userHasSigned.getObjectId(), face[1], face[2]);
+			}
+		
+		} else {
+			Log.i(TAG, "startDeleteFace: 删除出错！");
+		}
+	}
+
+	private Handler myHandler = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+			switch (msg.arg1) {
+				case FinalUtil.UPDATE_DETAIL_SUCCESS:
+					Toast.makeText(getApplicationContext(), "重命名成功", Toast.LENGTH_LONG).show();
+					String username = userHasSigned.getUser_name();
+					textView_face_detail_name.setText(username);
+					toolbar.setTitle(username + "的详细信息");
+					break;
+				case FinalUtil.UPDATE_DETAIL_IO_EXCEPTION:
+					Toast.makeText(getApplicationContext(), "网络异常，重命名失败", Toast.LENGTH_LONG).show();
+					break;
+				case FinalUtil.REMOVE_FACE_IO_EXCEPTION:
+					//dialog.dismiss();
+					showNormalDialog("温馨提示", "删除失败，请检查网络连接", true, null, true);
+					break;
+				case FinalUtil.REMOVE_FACE_BMOB_EXCEPTION:
+					//dialog.dismiss();
+					showNormalDialog("温馨提示", "删除成功，但是发生了一些未知错误", false, null, true);
+					break;
+				case FinalUtil.REMOVE_FACE_SUCCESS:
+					DatabaseAdapter db = new DatabaseAdapter(FaceDetailActivity.this);
+					userHasSigned = db.findUserByObiectId(userHasSigned.getObjectId());
+					db = null;
+					showNormalDialog(null, "恭喜，删除人脸成功！", true, null, true);
+				default:
+					break;
+			}
+			Intent intent = new Intent();
+			intent.putExtra("userHasSigned", userHasSigned);
+			intent.putExtra("position", position);
+			setResult(0, intent);
+		}
+	};
 
 	private void initDate() {
 		toolbar.setTitle(userHasSigned.getUser_name() + "的详细信息");
-		File imageFile = new File(FaceUtil.getPictureStoragePath(this), userHasSigned.getFace_token1() + ".jpg");
+		File imageFile = new File(PictureUtil.getPictureStoragePath(this), userHasSigned.getFace_token1() + ".jpg");
 		imageList.clear();
 		if (imageFile.exists()) {
 			Uri imageUri1 = Uri.fromFile(imageFile);
@@ -126,10 +257,12 @@ public class FaceDetailActivity extends Activity implements View.OnClickListener
 			Uri imageUrl5 = Uri.parse(imageurl);
 			imageList.add(imageUrl5);
 		}
-		FaceDetailAdapter adapter = new FaceDetailAdapter(imageList, userHasSigned);
+		faceDetailAdapter = new FaceDetailAdapter(imageList, userHasSigned);
 		StaggeredGridLayoutManager layoutManager = new StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL);
 		recyclerView_face_detail.setLayoutManager(layoutManager);
-		recyclerView_face_detail.setAdapter(adapter);
+		if (faceDetailAdapter != null) {
+			recyclerView_face_detail.setAdapter(faceDetailAdapter);
+		}
 	}
 
 	@Override
@@ -145,6 +278,7 @@ public class FaceDetailActivity extends Activity implements View.OnClickListener
 		button_face_detail_edit = (ImageButton) findViewById(R.id.button_face_detail_edit);
 		recyclerView_face_detail = (RecyclerView) findViewById(R.id.recyclerView_face_detail);
 		toolbar = (Toolbar) findViewById(R.id.toolbar_face_detail);
+
 
 	}
 
@@ -193,34 +327,95 @@ public class FaceDetailActivity extends Activity implements View.OnClickListener
 		builder.show();
 	}
 
-	private Handler myHandler = new Handler() {
-		@Override
-		public void handleMessage(Message msg) {
-
-			switch (msg.arg1) {
-				case FinalUtil.UPDATE_DETAIL_SUCCESS:
-					Toast.makeText(getApplicationContext(), "重命名成功", Toast.LENGTH_LONG).show();
-					String username = userHasSigned.getUser_name();
-					textView_face_detail_name.setText(username);
-					toolbar.setTitle(username + "的详细信息");
-					break;
-				case FinalUtil.UPDATE_DETAIL_IO_EXCEPTION:
-					Toast.makeText(getApplicationContext(), "网络异常，重命名失败", Toast.LENGTH_LONG).show();
-					break;
-				default:
-					break;
-			}
-			Intent intent = new Intent();
-			intent.putExtra("userHasSigned",userHasSigned);
-			intent.putExtra("position",position);
-			setResult(0,intent);
-		}
-	};
-
 	@Override
 	protected void onStop() {
 		super.onStop();
 
 	}
 
+	@Override
+	public void onBackPressed() {
+		if (edit_face) {
+			if (faceDetailAdapter != null) {
+				faceDetailAdapter.setOnLongClick(false);
+				faceDetailAdapter.notifyDataSetChanged();
+			}
+			edit_face = false;
+		} else {
+			super.onBackPressed();
+		}
+	}
+
+
+	private String getFaceTokenAndUrl(int index) {
+		StringBuffer sb = new StringBuffer();
+		if (testNull(userHasSigned.getFace_token1())) {
+			index--;
+			if (index == -1) {
+				return sb.append(userHasSigned.getFace_token1()).append('#').append("face_token1").append('#').append("face_url1").toString();
+			}
+		}
+		if (testNull(userHasSigned.getFace_token2())) {
+			index--;
+			if (index == -1) {
+				return sb.append(userHasSigned.getFace_token2()).append('#').append("face_token2").append('#').append("face_url2").toString();
+			}
+		}
+		if (testNull(userHasSigned.getFace_token3())) {
+			index--;
+			if (index == -1) {
+				return sb.append(userHasSigned.getFace_token3()).append('#').append("face_token3").append('#').append("face_url3").toString();
+			}
+		}
+		if (testNull(userHasSigned.getFace_token4())) {
+			index--;
+			if (index == -1) {
+				return sb.append(userHasSigned.getFace_token4()).append('#').append("face_token4").append('#').append("face_url4").toString();
+			}
+		}
+		if (testNull(userHasSigned.getFace_token5())) {
+			index--;
+			if (index == -1) {
+				return sb.append(userHasSigned.getFace_token5()).append('#').append("face_token5").append('#').append("face_url5").toString();
+			}
+		}
+		return "";
+	}
+
+	private boolean testNull(String test) {
+		if (test != null && !test.isEmpty() && !test.equals("")) {
+			return true;
+		}
+		return false;
+	}
+
+	private String getOutId() {
+		//创建FaceSet集合，并将人脸加入集合
+		SharedPreferences sp = getSharedPreferences("login", Context.MODE_PRIVATE);
+		return sp.getString("username", "default");
+	}
+
+	private void showNormalDialog(String title, String message, boolean cancel, View v, boolean haveButton) {
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setCancelable(cancel);
+		if (title != null) {
+			builder.setTitle(title);
+		} else {
+			builder.setTitle("温馨提示");
+		}
+		builder.setMessage(message);
+		if (v != null) {
+			builder.setView(v);
+		}
+		if (haveButton) {
+			builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialogInterface, int i) {
+					dialog.dismiss();
+					finish();
+				}
+			});
+		}
+		dialog = builder.show();
+	}
 }

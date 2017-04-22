@@ -34,6 +34,7 @@ import com.henu.swface.R;
 import com.henu.swface.Utils.FaceRect;
 import com.henu.swface.Utils.FaceUtil;
 import com.henu.swface.Utils.ParseResult;
+import com.henu.swface.Utils.PictureUtil;
 import com.iflytek.cloud.FaceDetector;
 import com.iflytek.cloud.SpeechUtility;
 import com.iflytek.cloud.util.Accelerometer;
@@ -324,13 +325,13 @@ public class BaseVideoActivity extends Activity {
 
                         if (null != faces && frontCamera == (Camera.CameraInfo.CAMERA_FACING_FRONT == mCameraId)) {
                             for (FaceRect face: faces) {
-                                face.bound = FaceUtil.RotateDeg90(face.bound, PREVIEW_WIDTH, PREVIEW_HEIGHT);
+                                face.bound = PictureUtil.RotateDeg90(face.bound, PREVIEW_WIDTH, PREVIEW_HEIGHT);
                                 if (face.point != null) {
                                     for (int i = 0; i < face.point.length; i++) {
-                                        face.point[i] = FaceUtil.RotateDeg90(face.point[i], PREVIEW_WIDTH, PREVIEW_HEIGHT);
+                                        face.point[i] = PictureUtil.RotateDeg90(face.point[i], PREVIEW_WIDTH, PREVIEW_HEIGHT);
                                     }
                                 }
-                                FaceUtil.drawFaceRect(canvas, face, PREVIEW_WIDTH, PREVIEW_HEIGHT,
+                                PictureUtil.drawFaceRect(canvas, face, PREVIEW_WIDTH, PREVIEW_HEIGHT,
                                         frontCamera, false);
                             }
                         } else {

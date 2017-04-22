@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import com.henu.swface.R;
 import com.henu.swface.Utils.FaceUtil;
+import com.henu.swface.Utils.PictureUtil;
 import com.henu.swface.Utils.RoundTransform;
 import com.henu.swface.VO.UserHasSigned;
 import com.henu.swface.activity.FaceDetailActivity;
@@ -27,6 +28,7 @@ import java.util.List;
 
 public class ManageAdapter extends RecyclerView.Adapter<ManageAdapter.ViewHolder> {
 
+	private static final String TAG = ManageAdapter.class.getSimpleName();
 	private List<UserHasSigned> userHasSignedList;
 	private int imageView_width = -1;
 	private OnItemClickListener onItemClickListener;
@@ -39,6 +41,7 @@ public class ManageAdapter extends RecyclerView.Adapter<ManageAdapter.ViewHolder
 
 	@Override
 	public ViewHolder onCreateViewHolder(final ViewGroup parent, int viewType) {
+		Log.i(TAG, "onCreateViewHolder: ");
 		final Context context = parent.getContext();
 		//获取屏幕宽度便于动态改变imageview长宽
 		if (imageView_width < 0) {
@@ -69,27 +72,28 @@ public class ManageAdapter extends RecyclerView.Adapter<ManageAdapter.ViewHolder
 
 	@Override
 	public void onBindViewHolder(ViewHolder holder, int position) {
+		Log.i(TAG, "onBindViewHolder: ");
 		Context context = holder.itemView.getContext();
 		UserHasSigned user = userHasSignedList.get(position);
 		File file = null;
 		String url = "";
 		if (user.getFace_token1() != null && !user.getFace_token1().isEmpty() && !user.getFace_token1().equals("")) {
-			file = new File(FaceUtil.getPictureStoragePath(null), user.getFace_token1() + ".jpg");
+			file = new File(PictureUtil.getPictureStoragePath(null), user.getFace_token1() + ".jpg");
 			url = user.getFace_url1();
 		}else if (user.getFace_token2() != null && !user.getFace_token2().isEmpty() && !user.getFace_token2().equals("")) {
-			file = new File(FaceUtil.getPictureStoragePath(null), user.getFace_token2() + ".jpg");
+			file = new File(PictureUtil.getPictureStoragePath(null), user.getFace_token2() + ".jpg");
 			url = user.getFace_url2();
 		}else if (user.getFace_token3() != null && !user.getFace_token3().isEmpty() && !user.getFace_token3().equals("")) {
-			file = new File(FaceUtil.getPictureStoragePath(null), user.getFace_token3() + ".jpg");
+			file = new File(PictureUtil.getPictureStoragePath(null), user.getFace_token3() + ".jpg");
 			url = user.getFace_url3();
 		}else if (user.getFace_token4() != null && !user.getFace_token4().isEmpty() && !user.getFace_token4().equals("")) {
-			file = new File(FaceUtil.getPictureStoragePath(null), user.getFace_token4() + ".jpg");
+			file = new File(PictureUtil.getPictureStoragePath(null), user.getFace_token4() + ".jpg");
 			url = user.getFace_url4();
 		}else if (user.getFace_token5() != null && !user.getFace_token5().isEmpty() && !user.getFace_token5().equals("")) {
-			file = new File(FaceUtil.getPictureStoragePath(null), user.getFace_token5() + ".jpg");
+			file = new File(PictureUtil.getPictureStoragePath(null), user.getFace_token5() + ".jpg");
 			url = user.getFace_url5();
 		}else{
-			file = new File(FaceUtil.getPictureStoragePath(null),"Void");
+			file = new File(PictureUtil.getPictureStoragePath(null),"Void");
 		}
 		if (file.exists()) {
 			Picasso.with(context).load(file).centerCrop().transform(new RoundTransform()).placeholder(R.mipmap.loading).resize(120, 180).into(holder.imageView_face_item);
@@ -127,7 +131,7 @@ public class ManageAdapter extends RecyclerView.Adapter<ManageAdapter.ViewHolder
 		this.onItemClickListener = onItemClickListener;
 	}
 
-	public void setOnItemClickListener(OnItemLongClickListener onItemLongClickListener){
+	public void setOnItemLongClickListener(OnItemLongClickListener onItemLongClickListener){
 		this.onItemLongClickListener = onItemLongClickListener;
 	}
 

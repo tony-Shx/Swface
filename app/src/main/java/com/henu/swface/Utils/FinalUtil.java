@@ -5,6 +5,10 @@ package com.henu.swface.Utils;
  */
 
 public final class FinalUtil {
+	//face++的api_key
+	public final static String API_KEY = "lJsij4n8pYEj3bW-tSJqEhRgkdfHobC8";
+	public final static String API_Secret = "i1H3kRBBzJ2Wo_1T-6RsbRmWgcHAREww";
+
 	public final static int DETECT_SUCCESS = 0X100;
 	public final static int DETECT_FAILED_IO_EXCEPTION = 0X101;
 	public final static int DETECT_FAILED_NO_FACE = 0X102;
@@ -29,5 +33,9 @@ public final class FinalUtil {
 
 	public final static int SYN_DATA_SUCCESS = 0x500;
 	public final static int SYN_DATA_FAILED = 0x501;
+
+	public final static int REMOVE_FACE_SUCCESS = 0X600;
+	public final static int REMOVE_FACE_IO_EXCEPTION = 0X601;
+	public final static int REMOVE_FACE_BMOB_EXCEPTION = 0X602;
 
 }

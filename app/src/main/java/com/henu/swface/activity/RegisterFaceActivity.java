@@ -27,9 +27,11 @@ import android.widget.Toast;
 import com.henu.swface.Database.BmobDataHelper;
 import com.henu.swface.Database.DatabaseAdapter;
 import com.henu.swface.R;
+import com.henu.swface.Utils.FaceSetUtil;
 import com.henu.swface.Utils.FaceUtil;
 import com.henu.swface.Utils.FinalUtil;
 import com.henu.swface.Utils.JSONUtil;
+import com.henu.swface.Utils.PictureUtil;
 import com.henu.swface.VO.Face;
 import com.henu.swface.VO.UserHasSigned;
 
@@ -89,7 +91,7 @@ public class RegisterFaceActivity extends BaseVideoActivity {
 			FileOutputStream fos;
 			//获取拍到的图片Bitmap
 			Bitmap bitmap_source = null;
-			String pictureStoragePath = FaceUtil.getPictureStoragePath(getApplicationContext());
+			String pictureStoragePath = PictureUtil.getPictureStoragePath(getApplicationContext());
 			File f = new File(pictureStoragePath, filename);
 			try {
 				fos = new FileOutputStream(f);
@@ -101,7 +103,7 @@ public class RegisterFaceActivity extends BaseVideoActivity {
 							100, fos);
 					Log.i(TAG, "onPictureTaken_data.length<20000: " + data.length);
 					Log.i(TAG, "onPictureTaken_nv21.length: " + nv21.length);
-					bitmap_source = FaceUtil.compressFacePhoto(f.getAbsolutePath());
+					bitmap_source = PictureUtil.compressFacePhoto(f.getAbsolutePath());
 					fos = new FileOutputStream(f);
 					BufferedOutputStream bos = new BufferedOutputStream(fos);
 					//旋转图片
@@ -114,7 +116,7 @@ public class RegisterFaceActivity extends BaseVideoActivity {
 					bos.close();
 					Log.i(TAG, "onPictureTaken_mBitmap1.compress: "+result);
 				} else {
-					bitmap_source = FaceUtil.compressFacePhoto(data);
+					bitmap_source = PictureUtil.compressFacePhoto(data);
 					BufferedOutputStream bos = new BufferedOutputStream(fos);
 					//旋转图片
 					// 根据旋转角度，生成旋转矩阵
@@ -144,7 +146,7 @@ public class RegisterFaceActivity extends BaseVideoActivity {
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
 		String username = null;
-		String pictureStoragePath = FaceUtil.getPictureStoragePath(getApplicationContext());
+		String pictureStoragePath = PictureUtil.getPictureStoragePath(getApplicationContext());
 		if (data != null) {
 			username = data.getStringExtra("username");
 		}
@@ -225,9 +227,9 @@ public class RegisterFaceActivity extends BaseVideoActivity {
 				SharedPreferences sp = getSharedPreferences("login", Context.MODE_PRIVATE);
 				String outerId = sp.getString("username", "default");
 				int attempt = 0;
-				Response response1 = FaceUtil.createFaceSet(API_KEY, API_Secret, "default", outerId, faceToken);
+				Response response1 = FaceSetUtil.createFaceSet(API_KEY, API_Secret, "default", outerId, faceToken);
 				while (response1 != null && response1.code() != 200 && attempt < 10) {
-					response1 = FaceUtil.createFaceSet(API_KEY, API_Secret, "default", outerId, faceToken);
+					response1 = FaceSetUtil.createFaceSet(API_KEY, API_Secret, "default", outerId, faceToken);
 					attempt++;
 					Log.e(TAG, "createFaceSet_attempt: " + attempt);
 					try {
@@ -290,7 +292,7 @@ public class RegisterFaceActivity extends BaseVideoActivity {
 					message.arg1 = FinalUtil.DETECT_FAILED_NO_FACE;
 					myhandler.sendMessage(message);
 				} else {
-					File newFile = new File(FaceUtil.getPictureStoragePath(getApplicationContext()), face.getFace_token() + ".jpg");
+					File newFile = new File(PictureUtil.getPictureStoragePath(getApplicationContext()), face.getFace_token() + ".jpg");
 					if (!imageFile.renameTo(newFile)) {
 						showNormalDialog(null, "文件重命名失败，请检查磁盘空间是否充足？", false, null, true);
 						return;

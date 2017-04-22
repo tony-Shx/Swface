@@ -234,7 +234,7 @@ public class DatabaseAdapter {
 			message.arg1 = FinalUtil.UPDATE_PICTURE_SUCCESS;
 			Bundle bundle = new Bundle();
 			bundle.putString("objectId", userHasSigned.getObjectId());
-			bundle.putString("faceToken", userHasSigned.getFace_url1());
+			bundle.putString("faceToken", userHasSigned.getFace_token1());
 			message.setData(bundle);
 			myHandler.sendMessage(message);
 		}
@@ -354,6 +354,20 @@ public class DatabaseAdapter {
 		String[] args = {userHasSigned.getObjectId()};
 		db.update(UserMetaData.UserTable.TABLE_NAME, values, whereClause, args);
 		Log.i(TAG, "updateUserFaceName_User: success!");
+	}
+
+	public void deleteUserFace_User(String objectId,String faceToken,String faceUrl,Handler myHandler){
+		SQLiteDatabase db = databaseHelper.getWritableDatabase();
+		ContentValues values = new ContentValues();
+		values.put(faceToken, "");
+		values.put(faceUrl,"");
+		String whereClause = UserMetaData.UserTable.OBJECT_ID + "=?";
+		String[] args = {objectId};
+		db.update(UserMetaData.UserTable.TABLE_NAME,values,whereClause,args);
+		Log.i(TAG, "daleteUserFace_User: success!");
+		Message message = Message.obtain();
+		message.arg1 = FinalUtil.REMOVE_FACE_SUCCESS;
+		myHandler.sendMessage(message);
 	}
 
 

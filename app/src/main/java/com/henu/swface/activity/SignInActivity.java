@@ -23,7 +23,9 @@ import android.widget.TextView;
 
 import com.henu.swface.Database.DatabaseAdapter;
 import com.henu.swface.R;
+import com.henu.swface.Utils.FaceSetUtil;
 import com.henu.swface.Utils.FinalUtil;
+import com.henu.swface.Utils.PictureUtil;
 import com.henu.swface.VO.FaceSignIn;
 import com.henu.swface.VO.SignLog;
 import com.henu.swface.VO.UserHasSigned;
@@ -44,8 +46,7 @@ import okhttp3.Response;
  */
 public class SignInActivity extends BaseVideoActivity {
 
-	private final static String API_KEY = "lJsij4n8pYEj3bW-tSJqEhRgkdfHobC8";
-	private final static String API_Secret = "i1H3kRBBzJ2Wo_1T-6RsbRmWgcHAREww";
+
 	private final static String TAG = SignInActivity.class.getSimpleName();
 	private AlertDialog dialog = null;
 	private Button button_take_photos;
@@ -82,7 +83,7 @@ public class SignInActivity extends BaseVideoActivity {
 						FileOutputStream fos;
 						//获取拍到的图片Bitmap
 						Bitmap bitmap_source = null;
-						String pictureStoragePath = FaceUtil.getPictureStoragePath(getApplicationContext());
+						String pictureStoragePath = PictureUtil.getPictureStoragePath(getApplicationContext());
 						File imageFile = new File(pictureStoragePath, filename);
 						try {
 							fos = new FileOutputStream(imageFile);
@@ -94,7 +95,7 @@ public class SignInActivity extends BaseVideoActivity {
 										100, fos);
 								Log.i(TAG, "onPictureTaken_data.length<20000: " + data.length);
 								Log.i(TAG, "onPictureTaken_nv21.length: " + nv21.length);
-								bitmap_source = FaceUtil.compressFacePhoto(imageFile.getAbsolutePath());
+								bitmap_source = PictureUtil.compressFacePhoto(imageFile.getAbsolutePath());
 								fos = new FileOutputStream(imageFile);
 								BufferedOutputStream bos = new BufferedOutputStream(fos);
 								//旋转图片
@@ -106,7 +107,7 @@ public class SignInActivity extends BaseVideoActivity {
 								boolean result = mBitmap1.compress(Bitmap.CompressFormat.JPEG, 100, bos);
 								Log.i(TAG, "onPictureTaken_mBitmap1.compress: " + result);
 							} else {
-								bitmap_source = FaceUtil.compressFacePhoto(data);
+								bitmap_source = PictureUtil.compressFacePhoto(data);
 								BufferedOutputStream bos = new BufferedOutputStream(fos);
 								//旋转图片
 								// 根据旋转角度，生成旋转矩阵
@@ -136,7 +137,7 @@ public class SignInActivity extends BaseVideoActivity {
 			public void run() {
 				FaceSignIn faceSignIn = null;
 				try {
-					Response response = FaceUtil.searchFaceset(getApplicationContext(), API_KEY, API_Secret, imageFile);
+					Response response = FaceSetUtil.searchFaceset(getApplicationContext(), FinalUtil.API_KEY, FinalUtil.API_Secret, imageFile);
 					if (response != null && response.code() == 200) {
 						JSONUtil jsonUtil = new JSONUtil();
 						faceSignIn = jsonUtil.parseSearchFaceJSON(response.body().string());

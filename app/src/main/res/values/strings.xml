@@ -21,4 +21,5 @@
     <string name="textView_face_detail_tip2">2.人脸库中每人可存储最多5张图片</string>
     <string name="menu_item_about">关于</string>
     <string name="button_face_detail_edit">button_face_detail_edit</string>
+    <string name="menu_item_delete_user">删除此人</string>
 </resources>

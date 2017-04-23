@@ -114,7 +114,7 @@ public class RegisterFaceActivity extends BaseVideoActivity {
 					testImageView.setImageBitmap(mBitmap1);
 					boolean result = mBitmap1.compress(Bitmap.CompressFormat.JPEG, 100, bos);
 					bos.close();
-					Log.i(TAG, "onPictureTaken_mBitmap1.compress: "+result);
+					Log.i(TAG, "onPictureTaken_mBitmap1.compress: " + result);
 				} else {
 					bitmap_source = PictureUtil.compressFacePhoto(data);
 					BufferedOutputStream bos = new BufferedOutputStream(fos);
@@ -211,7 +211,7 @@ public class RegisterFaceActivity extends BaseVideoActivity {
 					Bundle data = msg.getData();
 					String faceToken = data.getString("faceToken");
 					String objectId = data.getString("objectId");
-					createFaceSet(faceToken,objectId);
+					createFaceSet(faceToken, objectId);
 					break;
 				default:
 					break;
@@ -245,10 +245,15 @@ public class RegisterFaceActivity extends BaseVideoActivity {
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
+
 					Log.i(TAG, "faceSetOperate.createFaceSet(): " + JSON2);
-					Message message = new Message();
-					message.arg1 = FinalUtil.DETECT_SUCCESS;
-					myhandler.sendMessage(message);
+					if (JSON2.contains("\"face_added\": 1")) {
+						Message message = new Message();
+						message.arg1 = FinalUtil.DETECT_SUCCESS;
+						myhandler.sendMessage(message);
+					}else{
+						clearBMOBDate(objectID);
+					}
 				} else {
 					clearBMOBDate(objectID);
 				}
@@ -261,7 +266,7 @@ public class RegisterFaceActivity extends BaseVideoActivity {
 			@Override
 			public void run() {
 				Response response = FaceUtil.detectFace(imageFile, API_KEY, API_Secret);
-				if (null==response){
+				if (null == response) {
 					Message message = new Message();
 					message.arg1 = FinalUtil.DETECT_FAILED_IO_EXCEPTION;
 					myhandler.sendMessage(message);
@@ -349,7 +354,7 @@ public class RegisterFaceActivity extends BaseVideoActivity {
 					new Thread(new Runnable() {
 						@Override
 						public void run() {
-							BmobDataHelper bmobDataHelper = new BmobDataHelper(RegisterFaceActivity.this,myhandler);
+							BmobDataHelper bmobDataHelper = new BmobDataHelper(RegisterFaceActivity.this, myhandler);
 							bmobDataHelper.addUserHasSign(userHasSigned);
 						}
 					}).start();
@@ -370,7 +375,6 @@ public class RegisterFaceActivity extends BaseVideoActivity {
 		});
 
 	}
-
 
 
 	@Override

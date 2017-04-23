@@ -69,7 +69,7 @@ public class AddFaceActivity extends BaseVideoActivity {
 		initUI();
 		Intent intent = getIntent();
 		userHasSigned = (UserHasSigned) intent.getSerializableExtra("userHasSigned");
-		Log.i(TAG, "onCreate: "+userHasSigned.toString());
+		Log.i(TAG, "onCreate: " + userHasSigned.toString());
 	}
 
 
@@ -119,7 +119,7 @@ public class AddFaceActivity extends BaseVideoActivity {
 					testImageView.setImageBitmap(mBitmap1);
 					boolean result = mBitmap1.compress(Bitmap.CompressFormat.JPEG, 100, bos);
 					bos.close();
-					Log.i(TAG, "onPictureTaken_mBitmap1.compress: "+result);
+					Log.i(TAG, "onPictureTaken_mBitmap1.compress: " + result);
 				} else {
 					bitmap_source = PictureUtil.compressFacePhoto(data);
 					BufferedOutputStream bos = new BufferedOutputStream(fos);
@@ -150,12 +150,12 @@ public class AddFaceActivity extends BaseVideoActivity {
 
 
 	protected void checkFace(File imageFile) {
-			if (imageFile.exists()) {
-				showNormalDialog(null, "正在添加新人脸，请保持网络通畅...", false, new ProgressBar(this), false);
-				RegisterFace(imageFile);
-			} else {
-				Toast.makeText(this, "错误代码-1，拍照文件保存失败，请检查磁盘空间！", Toast.LENGTH_LONG).show();
-			}
+		if (imageFile.exists()) {
+			showNormalDialog(null, "正在添加新人脸，请保持网络通畅...", false, new ProgressBar(this), false);
+			RegisterFace(imageFile);
+		} else {
+			Toast.makeText(this, "错误代码-1，拍照文件保存失败，请检查磁盘空间！", Toast.LENGTH_LONG).show();
+		}
 	}
 
 	private Handler myhandler = new Handler() {
@@ -167,12 +167,12 @@ public class AddFaceActivity extends BaseVideoActivity {
 					showNormalDialog("温馨提示：", "恭喜，添加人脸成功！\n点击确定返回主界面", false, null, true);
 					break;
 				case FinalUtil.ADD_FACE_TO_FACESET_SUCCESS:
-					updateBmob((String)msg.obj);
+					updateBmob((String) msg.obj);
 					break;
 				case FinalUtil.DETECT_FAILED_IO_EXCEPTION:
 					dialog.cancel();
-					File imageFile = new File(PictureUtil.getPictureStoragePath(null),"waitForRename.jpg");
-					if(imageFile.exists()){
+					File imageFile = new File(PictureUtil.getPictureStoragePath(null), "waitForRename.jpg");
+					if (imageFile.exists()) {
 						imageFile.delete();
 					}
 					showNormalDialog("温馨提示：", "添加失败！\n请检查网络连接！！", false, null, true);
@@ -209,19 +209,19 @@ public class AddFaceActivity extends BaseVideoActivity {
 
 	private void updateBmob(String filePath) {
 		final UserHasSigned newUserHasSigned = new UserHasSigned(AddFaceActivity.this);
-		if(userHasSigned.getFace_url1()==null){
+		if (userHasSigned.getFace_url1() == null|| userHasSigned.getFace_url1().equals("")) {
 			newUserHasSigned.setFace_url1(filePath);
 			newUserHasSigned.setFace_token1(face.getFace_token());
-		}else if(userHasSigned.getFace_url2()==null){
+		} else if (userHasSigned.getFace_url2() == null|| userHasSigned.getFace_url2().equals("")) {
 			newUserHasSigned.setFace_url2(filePath);
 			newUserHasSigned.setFace_token2(face.getFace_token());
-		}else if(userHasSigned.getFace_url3()==null){
+		} else if (userHasSigned.getFace_url3() == null|| userHasSigned.getFace_url3().equals("")) {
 			newUserHasSigned.setFace_url3(filePath);
 			newUserHasSigned.setFace_token3(face.getFace_token());
-		}else if(userHasSigned.getFace_url4()==null){
+		} else if (userHasSigned.getFace_url4() == null|| userHasSigned.getFace_url4().equals("")) {
 			newUserHasSigned.setFace_url4(filePath);
 			newUserHasSigned.setFace_token4(face.getFace_token());
-		}else{
+		} else {
 			newUserHasSigned.setFace_url5(filePath);
 			newUserHasSigned.setFace_token5(face.getFace_token());
 		}
@@ -229,8 +229,8 @@ public class AddFaceActivity extends BaseVideoActivity {
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
-				BmobDataHelper bmobDataHelper = new BmobDataHelper(AddFaceActivity.this,myhandler);
-				bmobDataHelper.addUserFace(newUserHasSigned,userHasSigned.getObjectId());
+				BmobDataHelper bmobDataHelper = new BmobDataHelper(AddFaceActivity.this, myhandler);
+				bmobDataHelper.addUserFace(newUserHasSigned, userHasSigned.getObjectId());
 			}
 		}).start();
 	}
@@ -281,7 +281,7 @@ public class AddFaceActivity extends BaseVideoActivity {
 			@Override
 			public void run() {
 				Response response = FaceUtil.detectFace(imageFile, FinalUtil.API_KEY, FinalUtil.API_Secret);
-				if (null==response){
+				if (null == response) {
 					Message message = new Message();
 					message.arg1 = FinalUtil.DETECT_FAILED_IO_EXCEPTION;
 					myhandler.sendMessage(message);
@@ -319,7 +319,7 @@ public class AddFaceActivity extends BaseVideoActivity {
 					}
 					face.setImage_path(newFile.getAbsolutePath());
 					DatabaseAdapter db = new DatabaseAdapter(getApplicationContext());
-					Log.i(TAG, "run1: "+face.getFace_token());
+					Log.i(TAG, "run1: " + face.getFace_token());
 					db.addFace_Faces(face);
 					db = null;
 					//上传图片到BMOB数据库
@@ -353,7 +353,6 @@ public class AddFaceActivity extends BaseVideoActivity {
 		});
 
 	}
-
 
 
 	@Override

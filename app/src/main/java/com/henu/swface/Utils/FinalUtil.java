@@ -38,4 +38,8 @@ public final class FinalUtil {
 	public final static int REMOVE_FACE_IO_EXCEPTION = 0X601;
 	public final static int REMOVE_FACE_BMOB_EXCEPTION = 0X602;
 
+	public final static int REMOVE_USER_SUCCESS = 0X700;
+	public final static int REMOVE_USER_IO_EXCEPTION = 0X701;
+	public final static int REMOVE_USER_BMOB_EXCEPTION = 0X702;
+
 }

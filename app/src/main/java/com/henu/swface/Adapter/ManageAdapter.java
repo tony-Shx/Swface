@@ -97,8 +97,10 @@ public class ManageAdapter extends RecyclerView.Adapter<ManageAdapter.ViewHolder
 		}
 		if (file.exists()) {
 			Picasso.with(context).load(file).centerCrop().transform(new RoundTransform()).placeholder(R.mipmap.loading).resize(120, 180).into(holder.imageView_face_item);
-		} else {
+		} else if(!url.equals("")){
 			Picasso.with(context).load(url).centerCrop().placeholder(R.mipmap.loading).resize(120, 180).transform(new RoundTransform()).into(holder.imageView_face_item);
+		}else{
+			Picasso.with(context).load(R.mipmap.no_face).centerCrop().placeholder(R.mipmap.loading).resize(120, 180).transform(new RoundTransform()).into(holder.imageView_face_item);
 		}
 		if (imageView_width > 0) {
 			//动态改变imageview长宽使其保持正方形

@@ -99,24 +99,36 @@ public class ManageActivity extends Activity {
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
 		Log.i(TAG, "onActivityResult: resultCode" + resultCode);
-		if (data != null) {
-			UserHasSigned userHasSigned = (UserHasSigned) data.getSerializableExtra("userHasSigned");
-			int position = data.getIntExtra("position", -1);
-			if (position > -1) {
-				UserHasSigned userHasSigned1 = mList.get(position);
-				userHasSigned1.setFace_token1(userHasSigned.getFace_token1());
-				userHasSigned1.setFace_token2(userHasSigned.getFace_token2());
-				userHasSigned1.setFace_token3(userHasSigned.getFace_token3());
-				userHasSigned1.setFace_token4(userHasSigned.getFace_token4());
-				userHasSigned1.setFace_token5(userHasSigned.getFace_token5());
-				userHasSigned1.setFace_url1(userHasSigned.getFace_url1());
-				userHasSigned1.setFace_url2(userHasSigned.getFace_url2());
-				userHasSigned1.setFace_url3(userHasSigned.getFace_url3());
-				userHasSigned1.setFace_url4(userHasSigned.getFace_url4());
-				userHasSigned1.setFace_url5(userHasSigned.getFace_url5());
-				userHasSigned1.setUser_name(userHasSigned.getUser_name());
-				adapter.notifyItemChanged(position);
-				adapter.notifyDataSetChanged();
+		if (resultCode == 0) {
+			if (data != null) {
+				UserHasSigned userHasSigned = (UserHasSigned) data.getSerializableExtra("userHasSigned");
+				int position = data.getIntExtra("position", -1);
+				if (position > -1) {
+					UserHasSigned userHasSigned1 = mList.get(position);
+					userHasSigned1.setFace_token1(userHasSigned.getFace_token1());
+					userHasSigned1.setFace_token2(userHasSigned.getFace_token2());
+					userHasSigned1.setFace_token3(userHasSigned.getFace_token3());
+					userHasSigned1.setFace_token4(userHasSigned.getFace_token4());
+					userHasSigned1.setFace_token5(userHasSigned.getFace_token5());
+					userHasSigned1.setFace_url1(userHasSigned.getFace_url1());
+					userHasSigned1.setFace_url2(userHasSigned.getFace_url2());
+					userHasSigned1.setFace_url3(userHasSigned.getFace_url3());
+					userHasSigned1.setFace_url4(userHasSigned.getFace_url4());
+					userHasSigned1.setFace_url5(userHasSigned.getFace_url5());
+					userHasSigned1.setUser_name(userHasSigned.getUser_name());
+					adapter.notifyItemChanged(position);
+					adapter.notifyDataSetChanged();
+				}
+			}
+		} else {
+			if (data != null) {
+				int position = data.getIntExtra("position", -1);
+				if(position>-1){
+					mList.remove(position);
+					Log.i(TAG, "onActivityResult_mList.remove: ");
+					adapter.notifyItemRemoved(position);
+					adapter.notifyItemRangeChanged(position,mList.size());
+				}
 			}
 		}
 	}

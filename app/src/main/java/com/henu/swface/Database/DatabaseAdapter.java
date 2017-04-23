@@ -370,6 +370,17 @@ public class DatabaseAdapter {
 		myHandler.sendMessage(message);
 	}
 
+	public void deleteUser_User(String objectId,Handler myHandler){
+		SQLiteDatabase db = databaseHelper.getWritableDatabase();
+		String whereClause = UserMetaData.UserTable.OBJECT_ID + "=?";
+		String[] args = {objectId};
+		db.delete(UserMetaData.UserTable.TABLE_NAME,whereClause,args);
+		Log.i(TAG, "deleteUser_User: success!");
+		Message message = Message.obtain();
+		message.arg1 = FinalUtil.REMOVE_USER_SUCCESS;
+		myHandler.sendMessage(message);
+	}
+
 
 	public void addLog_SignLog(SignLog log) {
 		SQLiteDatabase db = databaseHelper.getWritableDatabase();

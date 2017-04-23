@@ -186,4 +186,23 @@ public class BmobDataHelper {
 		});
 
 	}
+
+	public void deleteUser(final String objectId){
+		UserHasSigned userHasSigned = new UserHasSigned(context);
+		userHasSigned.setObjectId(objectId);
+		userHasSigned.delete(new UpdateListener() {
+			@Override
+			public void done(BmobException e) {
+				if(e==null){
+					DatabaseAdapter db = new DatabaseAdapter(context);
+					db.deleteUser_User(objectId,myHandler);
+				}else{
+					Log.e(TAG, "userHasSigned.delete: ", e);
+					Message message = Message.obtain();
+					message.arg1 = FinalUtil.REMOVE_USER_BMOB_EXCEPTION;
+					myHandler.sendMessage(message);
+				}
+			}
+		});
+	}
 }

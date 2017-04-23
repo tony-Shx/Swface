@@ -16,33 +16,28 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.henu.swface.Adapter.FaceDetailAdapter;
 import com.henu.swface.Database.BmobDataHelper;
 import com.henu.swface.Database.DatabaseAdapter;
 import com.henu.swface.R;
 import com.henu.swface.Utils.FaceSetUtil;
-import com.henu.swface.Utils.FaceUtil;
 import com.henu.swface.Utils.FinalUtil;
 import com.henu.swface.Utils.PictureUtil;
 import com.henu.swface.Utils.RoundTransform;
 import com.henu.swface.VO.UserHasSigned;
-import com.iflytek.cloud.thirdparty.L;
 import com.squareup.picasso.Picasso;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
 import okhttp3.Response;
 
 public class FaceDetailActivity extends Activity implements View.OnClickListener {
@@ -63,12 +58,82 @@ public class FaceDetailActivity extends Activity implements View.OnClickListener
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_face_detail);
-		Intent intent = getIntent();
+		final Intent intent = getIntent();
 		userHasSigned = (UserHasSigned) intent.getSerializableExtra("userHasSigned");
 		position = intent.getIntExtra("position", -1);
 		findView();
 		toolbar.setNavigationIcon(R.mipmap.button_back);
-		toolbar.inflateMenu(R.menu.base_toolbar_menu);
+		toolbar.inflateMenu(R.menu.face_detail_toobar_menu);
+		toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+			@Override
+			public boolean onMenuItemClick(MenuItem item) {
+				switch (item.getItemId()) {
+					case R.id.action_delete_user:
+						AlertDialog.Builder builder = new AlertDialog.Builder(FaceDetailActivity.this);
+						builder.setTitle("温馨提示:");
+						builder.setMessage("当前操作会删除此人所有信息，包括此人所有已注册的人脸！！确定要删除吗？");
+						builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialogInterface, int i) {
+								showNormalDialog("温馨提示", "正在删除此人，请稍后...", false, null, false);
+								new Thread(new Runnable() {
+									@Override
+									public void run() {
+										startDeleteUser();
+									}
+								}).start();
+							}
+						});
+						builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialogInterface, int i) {
+								dialogInterface.dismiss();
+							}
+						});
+						dialog = builder.show();
+						break;
+					case R.id.action_about:
+						break;
+					default:
+						break;
+				}
+				return true;
+			}
+		});
+	}
+
+	private void startDeleteUser() {
+		if (!imageList.isEmpty()) {
+			StringBuilder sb = new StringBuilder();
+			sb.append(getFaceTokenAndUrl(0).split("#")[0]);
+			for (int i = 1; i < imageList.size(); i++) {
+				sb.append(',');
+				sb.append(getFaceTokenAndUrl(i).split("#")[0]);
+			}
+			Response response = FaceSetUtil.removeFaceFormFaceSet(FinalUtil.API_KEY, FinalUtil.API_Secret, getOutId(), sb.toString());
+			if (response == null || response.code() != 200) {
+				Message message = Message.obtain();
+				message.arg1 = FinalUtil.REMOVE_USER_IO_EXCEPTION;
+				myHandler.sendMessage(message);
+				return;
+			}
+			String JSON = "";
+			try {
+				JSON = response.body().string();
+				Log.i(TAG, "startDeleteFace_JSON: " + JSON);
+			} catch (IOException e) {
+				Log.e(TAG, "startDeleteFace: ", e);
+				e.printStackTrace();
+			}
+			if (JSON.isEmpty() || JSON.contains("error_message")) {
+				Message message = Message.obtain();
+				message.arg1 = FinalUtil.REMOVE_FACE_IO_EXCEPTION;
+				myHandler.sendMessage(message);
+				return;
+			}
+		}
+		BmobDataHelper bmobDataHelper = new BmobDataHelper(FaceDetailActivity.this, myHandler);
+		bmobDataHelper.deleteUser(userHasSigned.getObjectId());
 	}
 
 	@Override
@@ -132,7 +197,7 @@ public class FaceDetailActivity extends Activity implements View.OnClickListener
 									}
 								}).start();
 								dialogInterface.dismiss();
-								showNormalDialog(null,"正在删除，请稍后...",false,new ProgressBar(FaceDetailActivity.this),false);
+								showNormalDialog(null, "正在删除，请稍后...", false, new ProgressBar(FaceDetailActivity.this), false);
 							}
 						});
 						builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
@@ -153,7 +218,6 @@ public class FaceDetailActivity extends Activity implements View.OnClickListener
 		String faceTokenAndUrl = getFaceTokenAndUrl(index);
 		if (!faceTokenAndUrl.equals("")) {
 			String[] face = faceTokenAndUrl.split("#");
-			//// TODO: 2017/4/21 在这里调用删除的具体操作！！！
 			String out_id = getOutId();
 			Response response = FaceSetUtil.removeFaceFormFaceSet(FinalUtil.API_KEY, FinalUtil.API_Secret, out_id, face[0]);
 			if (response == null || response.code() != 200) {
@@ -177,10 +241,11 @@ public class FaceDetailActivity extends Activity implements View.OnClickListener
 				return;
 			}
 			BmobDataHelper db = new BmobDataHelper(this, myHandler);
-			if (face.length > 2) {
-				db.deleteUserFace(userHasSigned.getObjectId(), face[1], face[2]);
+			String[] attribute = getAttribute(index).split("#");
+			if (face.length == 2) {
+				db.deleteUserFace(userHasSigned.getObjectId(), attribute[0], attribute[1]);
 			}
-		
+
 		} else {
 			Log.i(TAG, "startDeleteFace: 删除出错！");
 		}
@@ -200,44 +265,74 @@ public class FaceDetailActivity extends Activity implements View.OnClickListener
 					Toast.makeText(getApplicationContext(), "网络异常，重命名失败", Toast.LENGTH_LONG).show();
 					break;
 				case FinalUtil.REMOVE_FACE_IO_EXCEPTION:
-					//dialog.dismiss();
+					dialog.dismiss();
 					showNormalDialog("温馨提示", "删除失败，请检查网络连接", true, null, true);
 					break;
 				case FinalUtil.REMOVE_FACE_BMOB_EXCEPTION:
-					//dialog.dismiss();
-					showNormalDialog("温馨提示", "删除成功，但是发生了一些未知错误", false, null, true);
+					dialog.dismiss();
+					showNormalDialog("温馨提示", "删除失败，发生了一些未知错误，请检查网络连接后重试", false, null, true);
 					break;
 				case FinalUtil.REMOVE_FACE_SUCCESS:
 					DatabaseAdapter db = new DatabaseAdapter(FaceDetailActivity.this);
 					userHasSigned = db.findUserByObiectId(userHasSigned.getObjectId());
 					db = null;
-					showNormalDialog(null, "恭喜，删除人脸成功！", true, null, true);
+					dialog.dismiss();
+//					showNormalDialog(null, "恭喜，删除人脸成功！", true, null, true);
+					Toast.makeText(FaceDetailActivity.this, "删除人脸成功", Toast.LENGTH_LONG).show();
+					edit_face = false;
+					initDate();
+					setOnClick();
+				case FinalUtil.REMOVE_USER_IO_EXCEPTION:
+					dialog.dismiss();
+					showNormalDialog("温馨提示", "删除失败，请检查网络连接", true, null, true);
+					break;
+				case FinalUtil.REMOVE_USER_BMOB_EXCEPTION:
+					dialog.dismiss();
+					showNormalDialog("温馨提示", "删除失败，发生了一些未知错误，请检查网络连接后然后重试", false, null, true);
+					break;
+				case FinalUtil.REMOVE_USER_SUCCESS:
+					dialog.dismiss();
+					Toast.makeText(FaceDetailActivity.this, "删除成功", Toast.LENGTH_LONG).show();
+					Intent intent = new Intent();
+					intent.putExtra("position", position);
+					setResult(1,intent);
+					finish();
+					return;
 				default:
 					break;
 			}
-			Intent intent = new Intent();
-			intent.putExtra("userHasSigned", userHasSigned);
-			intent.putExtra("position", position);
-			setResult(0, intent);
+			Log.i(TAG, "handleMessage_userHasSigned: ");
+			if (userHasSigned != null) {
+				Intent intent = new Intent();
+				intent.putExtra("userHasSigned", userHasSigned);
+				intent.putExtra("position", position);
+				setResult(0, intent);
+			}
 		}
 	};
 
 	private void initDate() {
 		toolbar.setTitle(userHasSigned.getUser_name() + "的详细信息");
-		File imageFile = new File(PictureUtil.getPictureStoragePath(this), userHasSigned.getFace_token1() + ".jpg");
-		imageList.clear();
-		if (imageFile.exists()) {
-			Uri imageUri1 = Uri.fromFile(imageFile);
-			imageList.add(imageUri1);
-			Picasso.with(this).load(imageFile).transform(new RoundTransform()).placeholder(R.mipmap.loading).into(imageView_face_detail_head);
+		String[] face = getFaceTokenAndUrl(0).split("#");
+		if (face.length == 2) {
+			File imageFile = new File(PictureUtil.getPictureStoragePath(this), face[0] + ".jpg");
+			if (imageFile.exists()) {
+				Picasso.with(this).load(imageFile).transform(new RoundTransform()).placeholder(R.mipmap.loading).into(imageView_face_detail_head);
+			} else {
+				Picasso.with(this).load(face[1]).transform(new RoundTransform()).centerCrop().resize(90, 120).placeholder(R.mipmap.loading).into(imageView_face_detail_head);
+			}
 		} else {
-			Uri imageUri1 = Uri.parse(userHasSigned.getFace_url1());
-			imageList.add(imageUri1);
-			Picasso.with(this).load(userHasSigned.getFace_url1()).transform(new RoundTransform()).centerCrop().resize(90, 120).placeholder(R.mipmap.loading).into(imageView_face_detail_head);
+			Picasso.with(this).load(R.mipmap.no_face).transform(new RoundTransform()).centerCrop().resize(90, 120).placeholder(R.mipmap.loading).into(imageView_face_detail_head);
 		}
 		textView_face_detail_name.setText(userHasSigned.getUser_name());
 		textView_face_detail_register_time.setText(userHasSigned.getCreated_at());
-		String imageurl = userHasSigned.getFace_url2();
+		imageList.clear();
+		String imageurl = userHasSigned.getFace_url1();
+		if (imageurl != null && !imageurl.isEmpty() && !imageurl.equals("")) {
+			Uri imageUrl1 = Uri.parse(imageurl);
+			imageList.add(imageUrl1);
+		}
+		imageurl = userHasSigned.getFace_url2();
 		if (imageurl != null && !imageurl.isEmpty() && !imageurl.equals("")) {
 			Uri imageUrl2 = Uri.parse(imageurl);
 			imageList.add(imageUrl2);
@@ -347,36 +442,71 @@ public class FaceDetailActivity extends Activity implements View.OnClickListener
 	}
 
 
-	private String getFaceTokenAndUrl(int index) {
+	private String getAttribute(int index) {
 		StringBuffer sb = new StringBuffer();
 		if (testNull(userHasSigned.getFace_token1())) {
 			index--;
 			if (index == -1) {
-				return sb.append(userHasSigned.getFace_token1()).append('#').append("face_token1").append('#').append("face_url1").toString();
+				return sb.append("face_token1").append('#').append("face_url1").toString();
 			}
 		}
 		if (testNull(userHasSigned.getFace_token2())) {
 			index--;
 			if (index == -1) {
-				return sb.append(userHasSigned.getFace_token2()).append('#').append("face_token2").append('#').append("face_url2").toString();
+				return sb.append("face_token2").append('#').append("face_url2").toString();
 			}
 		}
 		if (testNull(userHasSigned.getFace_token3())) {
 			index--;
 			if (index == -1) {
-				return sb.append(userHasSigned.getFace_token3()).append('#').append("face_token3").append('#').append("face_url3").toString();
+				return sb.append("face_token3").append('#').append("face_url3").toString();
 			}
 		}
 		if (testNull(userHasSigned.getFace_token4())) {
 			index--;
 			if (index == -1) {
-				return sb.append(userHasSigned.getFace_token4()).append('#').append("face_token4").append('#').append("face_url4").toString();
+				return sb.append("face_token4").append('#').append("face_url4").toString();
 			}
 		}
 		if (testNull(userHasSigned.getFace_token5())) {
 			index--;
 			if (index == -1) {
-				return sb.append(userHasSigned.getFace_token5()).append('#').append("face_token5").append('#').append("face_url5").toString();
+				return sb.append("face_token5").append('#').append("face_url5").toString();
+			}
+		}
+		return "";
+	}
+
+	private String getFaceTokenAndUrl(int index) {
+		StringBuffer sb = new StringBuffer();
+		if (testNull(userHasSigned.getFace_token1())) {
+			index--;
+			if (index == -1) {
+				return sb.append(userHasSigned.getFace_token1()).append('#').append(userHasSigned.getFace_url1()).toString();
+			}
+		}
+		if (testNull(userHasSigned.getFace_token2())) {
+			index--;
+			if (index == -1) {
+				return sb.append(userHasSigned.getFace_token2()).append('#').append(userHasSigned.getFace_url2()).toString();
+			}
+		}
+		if (testNull(userHasSigned.getFace_token3())) {
+			index--;
+			if (index == -1) {
+				return sb.append(userHasSigned.getFace_token3()).append('#').append(userHasSigned.getFace_url3()).toString();
+			}
+		}
+		if (testNull(userHasSigned.getFace_token4())) {
+			index--;
+			if (index == -1) {
+				return sb.append(userHasSigned.getFace_token4()).append('#').append(userHasSigned.getFace_url4()).toString();
+			}
+		}
+		if (testNull(userHasSigned.getFace_token5())) {
+			index--;
+			if (index == -1) {
+				return sb.append(userHasSigned.getFace_token5()).append('#').append(userHasSigned.getFace_url5()).toString();
 			}
 		}
 		return "";
@@ -412,7 +542,6 @@ public class FaceDetailActivity extends Activity implements View.OnClickListener
 				@Override
 				public void onClick(DialogInterface dialogInterface, int i) {
 					dialog.dismiss();
-					finish();
 				}
 			});
 		}

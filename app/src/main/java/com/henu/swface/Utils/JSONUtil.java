@@ -24,7 +24,6 @@ public class JSONUtil {
 		Face face = new Face();
 		try {
 			JSONObject jsonObject = new JSONObject(JSON);
-			face.setImage_id(jsonObject.get("image_id").toString());
 			face.setRequest_id(jsonObject.get("request_id").toString());
 			face.setTime_used(jsonObject.getInt("time_used"));
 			JSONArray faceArray = jsonObject.getJSONArray("faces");

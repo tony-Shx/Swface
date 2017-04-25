@@ -9,12 +9,15 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
+import com.henu.swface.Utils.FaceUtil;
 import com.henu.swface.Utils.FinalUtil;
+import com.henu.swface.Utils.JSONUtil;
 import com.henu.swface.VO.Face;
 import com.henu.swface.VO.FaceSignIn;
 import com.henu.swface.VO.SignLog;
 import com.henu.swface.VO.UserHasSigned;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,6 +26,7 @@ import cn.bmob.v3.BmobQuery;
 import cn.bmob.v3.exception.BmobException;
 import cn.bmob.v3.listener.FindListener;
 import cn.bmob.v3.listener.SaveListener;
+import okhttp3.Response;
 
 /**
  * Created by 宋浩祥 on 2017/3/7.
@@ -46,7 +50,6 @@ public class DatabaseAdapter {
 		SQLiteDatabase db = databaseHelper.getWritableDatabase();
 		//将数据按照键值对存入ContentValues
 		ContentValues values = new ContentValues();
-		values.put(FaceMetaData.FaceTable.IMAGE_ID, face.getImage_id());
 		values.put(FaceMetaData.FaceTable.REQUEST_ID, face.getRequest_id());
 		values.put(FaceMetaData.FaceTable.GENDER, face.getGender());
 		values.put(FaceMetaData.FaceTable.GLASS, face.getGlass());
@@ -78,7 +81,7 @@ public class DatabaseAdapter {
 		values.put(FaceMetaData.FaceTable.FACE_TOKEN, face.getFace_token());
 		values.put(FaceMetaData.FaceTable.IMAGE_PATH, face.getImage_path());
 		//执行插入操作
-		db.insert(FaceMetaData.FaceTable.TABLE_NAME, FaceMetaData.FaceTable.IMAGE_ID, values);
+		db.insert(FaceMetaData.FaceTable.TABLE_NAME, FaceMetaData.FaceTable.HEADPOSE_ROLL_ANGLE, values);
 		db.close();
 		System.out.println("插入数据成功！");
 
@@ -95,6 +98,83 @@ public class DatabaseAdapter {
 
 	}
 
+	public Face findFaceByFaceToken_Faces(final String faceToken, final Handler myHandler){
+		SQLiteDatabase db = databaseHelper.getReadableDatabase();
+		String[] selectionArgs = {String.valueOf(faceToken)};
+		Cursor cursor = db.query(FaceMetaData.FaceTable.TABLE_NAME, null, "face_token=?", selectionArgs, null, null, null);
+		Face face = null;
+		while (cursor.moveToNext()) {
+			face = new Face();
+			face.setId(cursor.getInt(cursor.getColumnIndex("id")));
+			face.setRequest_id(cursor.getString(cursor.getColumnIndex("request_id")));
+			face.setGender(cursor.getString(cursor.getColumnIndex("gender")));
+			face.setGlass(cursor.getString(cursor.getColumnIndex("glass")));
+			face.setEthnicity(cursor.getString(cursor.getColumnIndex("ethnicity")));
+			face.setTime_used(cursor.getInt(cursor.getColumnIndex("time_used")));
+			face.setAge(cursor.getInt(cursor.getColumnIndex("age")));
+			face.setFace_rectangle_width(cursor.getInt(cursor.getColumnIndex("face_rectangle_width")));
+			face.setFace_rectangle_top(cursor.getInt(cursor.getColumnIndex("face_rectangle_top")));
+			face.setFace_rectangle_left(cursor.getInt(cursor.getColumnIndex("face_rectangle_left")));
+			face.setFace_rectangle_high(cursor.getInt(cursor.getColumnIndex("face_rectangle_height")));
+			face.setlNormalGlassEyeOpen(cursor.getFloat(cursor.getColumnIndex("left_normal_glass_eye_open")));
+			face.setlNoGlassEyeClose(cursor.getFloat(cursor.getColumnIndex("left_no_glass_eye_close")));
+			face.setLeft_occlusion(cursor.getFloat(cursor.getColumnIndex("left_occlusion")));
+			face.setLeftNoGlassEyeOpen(cursor.getFloat(cursor.getColumnIndex("left_no_glass_eye_open")));
+			face.setlNormalGlassEyeClose(cursor.getFloat(cursor.getColumnIndex("left_normal_glass_eye_close")));
+			face.setLeft_dark_glasses(cursor.getFloat(cursor.getColumnIndex("left_dark_glasses")));
+			face.setrNormalGlassEyeOpen(cursor.getFloat(cursor.getColumnIndex("right_normal_glass_eye_open")));
+			face.setrNoGlassEyeClose(cursor.getFloat(cursor.getColumnIndex("right_no_glass_eye_close")));
+			face.setRight_occlusion(cursor.getFloat(cursor.getColumnIndex("right_occlusion")));
+			face.setrNoGlassEyeOpen(cursor.getFloat(cursor.getColumnIndex("right_no_glass_eye_open")));
+			face.setrNormalGlassEyeClose(cursor.getFloat(cursor.getColumnIndex("right_normal_glass_eye_close")));
+			face.setRight_dark_glasses(cursor.getFloat(cursor.getColumnIndex("right_dark_glasses")));
+			face.setHeadpose_yaw_angle(cursor.getFloat(cursor.getColumnIndex("headpose_yaw_angle")));
+			face.setHeadpose_pitch_angle(cursor.getFloat(cursor.getColumnIndex("headpose_pitch_angle")));
+			face.setHeadpose_roll_angle(cursor.getFloat(cursor.getColumnIndex("headpose_roll_angle")));
+			face.setBlurness(cursor.getFloat(cursor.getColumnIndex("blurness")));
+			face.setSmile(cursor.getFloat(cursor.getColumnIndex("smile")));
+			face.setFacequality(cursor.getFloat(cursor.getColumnIndex("facequality")));
+			face.setFace_token(cursor.getString(cursor.getColumnIndex("face_token")));
+			face.setImage_path(cursor.getString(cursor.getColumnIndex("image_path")));
+		}
+		cursor.close();
+		if(face==null){
+			new Thread(new Runnable() {
+				@Override
+				public void run() {
+					Response response = FaceUtil.detectFace(faceToken,FinalUtil.API_KEY,FinalUtil.API_Secret);
+					JSONUtil jsonUtil = new JSONUtil();
+					if(response==null||response.code()!=200){
+						Log.i(TAG, "FaceUtil.detectFace: 1"+response.code());
+						Message message = Message.obtain();
+						message.arg1 = FinalUtil.DETECT_FAILED_IO_EXCEPTION;
+						myHandler.sendMessage(message);
+					}else{
+						Log.i(TAG, "FaceUtil.detectFace: 2");
+						try {
+							Face face = jsonUtil.parseDetectFaceJSON(response.body().string());
+							if(face!=null){
+								addFace_Faces(face);
+								Message message = Message.obtain();
+								message.obj = face;
+								message.arg1 = FinalUtil.DETECT_SUCCESS;
+								myHandler.sendMessage(message);
+							}else{
+								Message message = Message.obtain();
+								message.arg1 = FinalUtil.DETECT_FAILED_IO_EXCEPTION;
+								myHandler.sendMessage(message);
+							}
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+
+					}
+				}
+			}).start();
+		}
+		return face;
+	}
+
 	public Face findById_Faces(int id) {
 		SQLiteDatabase db = databaseHelper.getReadableDatabase();
 		String[] selectionArgs = {String.valueOf(id)};
@@ -103,7 +183,6 @@ public class DatabaseAdapter {
 		while (cursor.moveToNext()) {
 			face = new Face();
 			face.setId(cursor.getInt(cursor.getColumnIndex("id")));
-			face.setImage_id(cursor.getString(cursor.getColumnIndex("image_id")));
 			face.setRequest_id(cursor.getString(cursor.getColumnIndex("request_id")));
 			face.setGender(cursor.getString(cursor.getColumnIndex("gender")));
 			face.setGlass(cursor.getString(cursor.getColumnIndex("glass")));
@@ -146,7 +225,6 @@ public class DatabaseAdapter {
 		while (cursor.moveToNext()) {
 			Face face = new Face();
 			face.setId(cursor.getInt(cursor.getColumnIndex("id")));
-			face.setImage_id(cursor.getString(cursor.getColumnIndex("image_id")));
 			face.setRequest_id(cursor.getString(cursor.getColumnIndex("request_id")));
 			face.setGender(cursor.getString(cursor.getColumnIndex("gender")));
 			face.setGlass(cursor.getString(cursor.getColumnIndex("glass")));

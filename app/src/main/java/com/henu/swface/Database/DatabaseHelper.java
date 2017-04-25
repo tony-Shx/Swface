@@ -13,7 +13,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DB_NAME = "Swface.db";
     private static final int version = 1;
     private static final String CREATE_TABLE_FACES = "CREATE TABLE IF NOT EXISTS Faces(id INTEGER PRIMARY KEY AUTOINCREMENT," +
-            "image_id TEXT,request_id TEXT,gender TEXT,glass TEXT,ethnicity TEXT," +
+            "request_id TEXT,gender TEXT,glass TEXT,ethnicity TEXT," +
             "time_used INTEGER,age INTEGER,face_rectangle_width INTEGER,face_rectangle_top INTEGER," +
             "face_rectangle_left INTEGER,face_rectangle_height INTEGER," +
             "left_normal_glass_eye_open REAL,left_no_glass_eye_close REAL,left_occlusion REAL," +

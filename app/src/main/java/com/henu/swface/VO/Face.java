@@ -8,7 +8,7 @@ import cn.bmob.v3.BmobObject;
 
 public class Face {
 
-	private String image_id,request_id,gender,glass,ethnicity,face_token,image_path;
+	private String request_id,gender,glass,ethnicity,face_token,image_path;
 	private int id,time_used,age,face_rectangle_width,face_rectangle_top,face_rectangle_left, face_rectangle_high;
 	private float lNormalGlassEyeOpen, lNoGlassEyeClose,left_occlusion, leftNoGlassEyeOpen
 	, lNormalGlassEyeClose,left_dark_glasses, rNormalGlassEyeOpen, rNoGlassEyeClose,
@@ -20,40 +20,71 @@ public class Face {
 
 	@Override
 	public String toString() {
-		return "Face{" +
-				"image_id='" + image_id + '\'' +
-				", request_id='" + request_id + '\'' +
-				", gender='" + gender + '\'' +
-				", glass='" + glass + '\'' +
-				", ethnicity='" + ethnicity + '\'' +
-				", face_token='" + face_token + '\'' +
-				", image_path='" + image_path + '\'' +
-				", id=" + id +
-				", time_used=" + time_used +
-				", age=" + age +
-				", face_rectangle_width=" + face_rectangle_width +
-				", face_rectangle_top=" + face_rectangle_top +
-				", face_rectangle_left=" + face_rectangle_left +
-				", face_rectangle_high=" + face_rectangle_high +
-				", lNormalGlassEyeOpen=" + lNormalGlassEyeOpen +
-				", lNoGlassEyeClose=" + lNoGlassEyeClose +
-				", left_occlusion=" + left_occlusion +
-				", leftNoGlassEyeOpen=" + leftNoGlassEyeOpen +
-				", lNormalGlassEyeClose=" + lNormalGlassEyeClose +
-				", left_dark_glasses=" + left_dark_glasses +
-				", rNormalGlassEyeOpen=" + rNormalGlassEyeOpen +
-				", rNoGlassEyeClose=" + rNoGlassEyeClose +
-				", right_occlusion=" + right_occlusion +
-				", rNoGlassEyeOpen=" + rNoGlassEyeOpen +
-				", rNormalGlassEyeClose=" + rNormalGlassEyeClose +
-				", right_dark_glasses=" + right_dark_glasses +
-				", headpose_yaw_angle=" + headpose_yaw_angle +
-				", headpose_pitch_angle=" + headpose_pitch_angle +
-				", headpose_roll_angle=" + headpose_roll_angle +
-				", blurness=" + blurness +
-				", smile=" + smile +
-				", facequality=" + facequality +
-				'}';
+		StringBuffer sb = new StringBuffer();
+		sb.append("请求ID：").append(request_id).append("\n").append("\n");
+		sb.append("性别：");
+		if(gender.equals("Male")){
+			sb.append("男");
+		}else if(gender.equals("Female")){
+			sb.append("女");
+		}else {
+			sb.append("未知");
+		}
+		sb.append("\n");
+		sb.append("年龄：").append(age).append("\n").append("\n");
+		sb.append("人脸在图片中位置（单位：像素）").append("\n");
+		sb.append("左上角横坐标:").append(face_rectangle_left).append("\n");
+		sb.append("左上角纵坐标:").append(face_rectangle_top).append("\n");
+		sb.append("右下角横坐标:").append(face_rectangle_left+face_rectangle_width+face_rectangle_high).append("\n");
+		sb.append("右下角纵坐标:").append(face_rectangle_top+face_rectangle_high+face_rectangle_width).append("\n");
+		sb.append("人脸宽度:").append(face_rectangle_width).append("\n");
+		sb.append("人脸高度:").append(face_rectangle_high).append("\n").append("\n");
+		sb.append("左眼状态").append("\n");
+		sb.append("眼睛被遮挡的置信度:").append(left_occlusion).append("%").append("\n");
+		sb.append("不戴眼镜且睁眼的置信度:").append(leftNoGlassEyeOpen).append("%").append("\n");
+		sb.append("不戴眼镜且闭眼的置信度:").append(lNoGlassEyeClose).append("%").append("\n");
+		sb.append("佩戴普通眼镜且睁眼的置信度:").append(lNormalGlassEyeOpen).append("%").append("\n");
+		sb.append("佩戴普通眼镜且闭眼的置信度:").append(lNormalGlassEyeClose).append("%").append("\n");
+		sb.append("佩戴墨镜的置信度:").append(left_dark_glasses).append("%").append("\n").append("\n");
+		sb.append("右眼状态").append("\n");
+		sb.append("眼睛被遮挡的置信度:").append(right_occlusion).append("%").append("\n");
+		sb.append("不戴眼镜且睁眼的置信度:").append(rNoGlassEyeOpen).append("%").append("\n");
+		sb.append("不戴眼镜且闭眼的置信度:").append(rNoGlassEyeClose).append("%").append("\n");
+		sb.append("佩戴普通眼镜且睁眼的置信度:").append(rNormalGlassEyeOpen).append("%").append("\n");
+		sb.append("佩戴普通眼镜且闭眼的置信度:").append(rNormalGlassEyeClose).append("%").append("\n");
+		sb.append("佩戴墨镜的置信度:").append(right_dark_glasses).append("%").append("\n").append("\n");
+		sb.append("佩戴眼镜状态：");
+		if(glass.equals("None")){
+			sb.append("没有戴眼镜");
+		}else if(glass.equals("Normal")){
+			sb.append("佩戴普通眼镜");
+		}else if(glass.equals("Dark")){
+			sb.append("佩戴墨镜");
+		}else{
+			sb.append("未知");
+		}
+		sb.append("\n").append("\n");
+		sb.append("人脸姿势分析").append("\n");
+		sb.append("摇头角度：").append(headpose_yaw_angle).append("\n");
+		sb.append("抬头角度：").append(headpose_pitch_angle).append("\n");
+		sb.append("平面旋转角度：").append(headpose_roll_angle).append("\n").append("\n");
+		sb.append("笑容状态：").append(smile).append("(数值越大笑容越灿烂^_^)").append("\n");
+		sb.append("人种肤色分析：");
+		if(ethnicity.equals("Asian")){
+			sb.append("亚洲黄种人");
+		}else if(ethnicity.equals("White")){
+			sb.append("美洲白种人");
+		}else if(ethnicity.equals("Black")){
+			sb.append("非洲黑人");
+		}else{
+			sb.append("未知");
+		}
+		sb.append("\n").append("\n");
+		sb.append("人脸唯一标识符：").append(face_token).append("\n");
+		sb.append("人脸质量：").append(facequality).append("%").append("\n");
+		sb.append("分析用时：").append(time_used).append("ms").append("\n");
+		sb.append("以上分析结果可信度：").append(100-blurness).append("%").append("\n").append("\n").append("\n");
+		return sb.toString();
 	}
 
 	public int getId() {
@@ -81,13 +112,6 @@ public class Face {
 		this.face_token = face_token;
 	}
 
-	public String getImage_id() {
-		return image_id;
-	}
-
-	public void setImage_id(String image_id) {
-		this.image_id = image_id;
-	}
 
 	public String getRequest_id() {
 		return request_id;

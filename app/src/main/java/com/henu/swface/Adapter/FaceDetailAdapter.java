@@ -26,7 +26,6 @@ import java.util.List;
 public class FaceDetailAdapter extends RecyclerView.Adapter<FaceDetailAdapter.ViewHolder> {
 
 	private List<Uri> imageList;
-	private UserHasSigned userHasSigned;
 	private OnItemLongClickListener onItemLongClickListener;
 	private static final String TAG = FaceDetailAdapter.class.getSimpleName();
 	private OnDeleteClickListener onDeleteClickListener;
@@ -38,9 +37,8 @@ public class FaceDetailAdapter extends RecyclerView.Adapter<FaceDetailAdapter.Vi
 		this.onLongClick = onLongClick;
 	}
 
-	public FaceDetailAdapter(List<Uri> imageList, UserHasSigned userHasSigned) {
+	public FaceDetailAdapter(List<Uri> imageList) {
 		this.imageList = imageList;
-		this.userHasSigned = userHasSigned;
 	}
 
 	@Override
@@ -53,25 +51,21 @@ public class FaceDetailAdapter extends RecyclerView.Adapter<FaceDetailAdapter.Vi
 		View view = LayoutInflater.from(context).inflate(R.layout.recyclerview_face_detail_item, parent, false);
 		final ViewHolder viewHolder = new ViewHolder(view);
 
-		viewHolder.imageView_face_detail.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				int position = viewHolder.getAdapterPosition();
-				if (position >= imageList.size()) {
-					Intent intent = new Intent(context, AddFaceActivity.class);
-					intent.putExtra("userHasSigned", userHasSigned);
-					context.startActivity(intent);
-				} else {
-
+		if (onFaceClickListener != null) {
+			viewHolder.imageView_face_detail.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View view) {
+					int position = viewHolder.getAdapterPosition();
+					onFaceClickListener.onFaceClick(view,position);
 				}
-			}
-		});
+			});
+		}
 		if (onItemLongClickListener != null) {
 			viewHolder.imageView_face_detail.setOnLongClickListener(new View.OnLongClickListener() {
 				@Override
 				public boolean onLongClick(View view) {
 					int position = viewHolder.getAdapterPosition();
-					Log.i(TAG, "onLongClick: "+position);
+					Log.i(TAG, "onLongClick: " + position);
 					if (position < imageList.size()) {
 						onLongClick = true;
 						onItemLongClickListener.onItemLongClick(view);
@@ -81,13 +75,13 @@ public class FaceDetailAdapter extends RecyclerView.Adapter<FaceDetailAdapter.Vi
 			});
 		}
 
-		if(onDeleteClickListener!=null){
+		if (onDeleteClickListener != null) {
 			viewHolder.imageView_delete_face_detail.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View view) {
-					if(onLongClick){
+					if (onLongClick) {
 						int position = viewHolder.getAdapterPosition();
-						onDeleteClickListener.onDeleteClick(view,position);
+						onDeleteClickListener.onDeleteClick(view, position);
 					}
 				}
 			});
@@ -157,11 +151,11 @@ public class FaceDetailAdapter extends RecyclerView.Adapter<FaceDetailAdapter.Vi
 	}
 
 	public interface OnDeleteClickListener {
-		void onDeleteClick(View view,int index);
+		void onDeleteClick(View view, int index);
 	}
 
 	public interface OnFaceClickListener {
-		void onFaceClick(View view);
+		void onFaceClick(View view,int position);
 	}
 
 }

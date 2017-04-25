@@ -15,7 +15,6 @@ public final class FaceMetaData {
 
     public static abstract class FaceTable implements BaseColumns{
         public static final String TABLE_NAME = "Faces";
-        public static final String IMAGE_ID = "image_id";
         public static final String REQUEST_ID = "request_id";
         public static final String GENDER = "gender";
         public static final String GLASS = "glass";

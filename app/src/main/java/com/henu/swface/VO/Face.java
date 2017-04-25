@@ -35,8 +35,8 @@ public class Face {
 		sb.append("人脸在图片中位置（单位：像素）").append("\n");
 		sb.append("左上角横坐标:").append(face_rectangle_left).append("\n");
 		sb.append("左上角纵坐标:").append(face_rectangle_top).append("\n");
-		sb.append("右下角横坐标:").append(face_rectangle_left+face_rectangle_width+face_rectangle_high).append("\n");
-		sb.append("右下角纵坐标:").append(face_rectangle_top+face_rectangle_high+face_rectangle_width).append("\n");
+		sb.append("右下角横坐标:").append(face_rectangle_left+face_rectangle_width).append("\n");
+		sb.append("右下角纵坐标:").append(face_rectangle_top+face_rectangle_high).append("\n");
 		sb.append("人脸宽度:").append(face_rectangle_width).append("\n");
 		sb.append("人脸高度:").append(face_rectangle_high).append("\n").append("\n");
 		sb.append("左眼状态").append("\n");

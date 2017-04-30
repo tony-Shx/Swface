@@ -8,6 +8,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.ContactsContract;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
@@ -28,12 +29,18 @@ import cn.bmob.v3.Bmob;
 import cn.bmob.v3.BmobQuery;
 import cn.bmob.v3.exception.BmobException;
 import cn.bmob.v3.listener.FindListener;
+import in.srain.cube.views.ptr.PtrClassicFrameLayout;
+import in.srain.cube.views.ptr.PtrFrameLayout;
+import in.srain.cube.views.ptr.PtrHandler;
+import in.srain.cube.views.ptr.PtrUIHandler;
+import in.srain.cube.views.ptr.indicator.PtrIndicator;
 
 public class ManageActivity extends Activity {
 
 	private RecyclerView recyclerView_manage;
 	//    private Dialog dialog;
 	private Toolbar toolbar;
+	private PtrClassicFrameLayout ptrFrame;
 	private ArrayList<UserHasSigned> mList;
 	private ManageAdapter adapter;
 	private static final String TAG = ManageActivity.class.getSimpleName();
@@ -44,6 +51,8 @@ public class ManageActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_manage);
 		recyclerView_manage = (RecyclerView) findViewById(R.id.recyclerView_manage);
+		ptrFrame = (PtrClassicFrameLayout) findViewById(R.id.fragment_rotate_header_with_view_group_frame);
+		initPtrFrame();
 		toolbar = (Toolbar) findViewById(R.id.toolbar_manage);
 		toolbar.setNavigationIcon(R.mipmap.button_back);
 		toolbar.setNavigationOnClickListener(new View.OnClickListener() {
@@ -56,7 +65,52 @@ public class ManageActivity extends Activity {
 		toolbar.inflateMenu(R.menu.base_toolbar_menu);
 		StaggeredGridLayoutManager layoutManager = new StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL);
 		recyclerView_manage.setLayoutManager(layoutManager);
-		new InitDate().execute();
+		mList = new ArrayList<>();
+		adapter = new ManageAdapter(mList);
+		recyclerView_manage.setAdapter(adapter);
+	}
+
+	private void initPtrFrame() {
+		ptrFrame.setPtrHandler(new PtrHandler() {
+			@Override
+			public void onRefreshBegin(PtrFrameLayout frame) {
+				new InitDate().execute();
+			}
+
+			@Override
+			public boolean checkCanDoRefresh(PtrFrameLayout frame, View content, View header) {
+				Log.i(TAG, "checkCanDoRefresh: "+recyclerView_manage.getScaleY()+" "+recyclerView_manage.getScaleX());
+				//判断当前是否在recyclerView_manage的顶部
+				if(recyclerView_manage.getChildAt(0).getY()==0f){
+					return true;
+				}else{
+					return false;
+				}
+
+			}
+
+
+		});
+		ptrFrame.setLastUpdateTimeRelateObject(this);
+		// the following are default settings
+		ptrFrame.setResistance(1.7f);
+		ptrFrame.setRatioOfHeaderHeightToRefresh(1.2f);
+		ptrFrame.setDurationToClose(200);
+		ptrFrame.setDurationToCloseHeader(1800);
+		// default is false
+		ptrFrame.setPullToRefresh(false);
+		// default is true
+		ptrFrame.setKeepHeaderWhenRefresh(true);
+
+		// scroll then refresh
+		// comment in base fragment
+		ptrFrame.postDelayed(new Runnable() {
+			@Override
+			public void run() {
+				// ptrFrame.autoRefresh();
+				ptrFrame.autoRefresh(true);
+			}
+		}, 150);
 	}
 
 	@Override
@@ -72,9 +126,9 @@ public class ManageActivity extends Activity {
 		protected Void doInBackground(final Integer... integers) {
 			Log.i(TAG, "doInBackground: " + integers);
 			DatabaseAdapter db = new DatabaseAdapter(ManageActivity.this);
-			mList = db.findAllUser_User();
+			mList.clear();
+			mList.addAll(db.findAllUser_User());
 			db = null;
-			adapter = new ManageAdapter(mList);
 			adapter.setOnItemClickListener(new ManageAdapter.OnItemClickListener() {
 				@Override
 				public void onItemClick(View view, int position) {
@@ -84,13 +138,14 @@ public class ManageActivity extends Activity {
 					startActivityForResult(intent, ManageActivity_Request);
 				}
 			});
+
 			return null;
 		}
 
 		@Override
 		protected void onPostExecute(Void aVoid) {
 			super.onPostExecute(aVoid);
-			recyclerView_manage.setAdapter(adapter);
+			adapter.notifyDataSetChanged();
 			findBmobSql();
 		}
 	}
@@ -188,6 +243,7 @@ public class ManageActivity extends Activity {
 					break;
 				case FinalUtil.SYN_DATA_FAILED:
 					Toast.makeText(getApplicationContext(), "查询出错，请检查网络连接", Toast.LENGTH_LONG).show();
+					//ptrFrame.clearAnimation();
 					break;
 				default:
 					break;
@@ -197,10 +253,10 @@ public class ManageActivity extends Activity {
 
 	private void notifyData() {
 		synchronized (adapter) {
-			adapter.notifyAll();
+			//adapter.notifyAll();
 			adapter.notifyDataSetChanged();
 			Log.i(TAG, "adapter.notifyAll()_online:success " + Thread.currentThread().getId());
-			Toast.makeText(getApplicationContext(), "列表更新成功", Toast.LENGTH_LONG).show();
+			ptrFrame.refreshComplete();
 		}
 	}
 

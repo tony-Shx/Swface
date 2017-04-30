@@ -12,14 +12,33 @@
         android:id="@+id/toolbar_manage"
         android:background="#74828b"
         >
-
-
     </android.support.v7.widget.Toolbar>
 
-    <android.support.v7.widget.RecyclerView
+    <in.srain.cube.views.ptr.PtrClassicFrameLayout
+        android:id="@+id/fragment_rotate_header_with_view_group_frame"
+        xmlns:cube_ptr="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/recyclerView_manage">
+        cube_ptr:ptr_resistance="1.7"
+        android:background="#2d2c2c"
+        cube_ptr:ptr_ratio_of_header_height_to_refresh="1.2"
+        cube_ptr:ptr_duration_to_close="300"
+        cube_ptr:ptr_duration_to_close_header="2000"
+        cube_ptr:ptr_keep_header_when_refresh="true"
+        cube_ptr:ptr_pull_to_fresh="false" >
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:background="#ffffff"
+            android:layout_height="match_parent">
+            <android.support.v7.widget.RecyclerView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/recyclerView_manage">
+            </android.support.v7.widget.RecyclerView>
+        </FrameLayout>
 
-    </android.support.v7.widget.RecyclerView>
+
+    </in.srain.cube.views.ptr.PtrClassicFrameLayout>
+
+
 </LinearLayout>

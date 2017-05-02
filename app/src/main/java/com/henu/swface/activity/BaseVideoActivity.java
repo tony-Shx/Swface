@@ -48,6 +48,7 @@ public class BaseVideoActivity extends Activity {
         private SurfaceView mPreviewSurface;
         private SurfaceView mFaceSurface;
         protected Camera mCamera;
+
         protected int mCameraId = Camera.CameraInfo.CAMERA_FACING_FRONT;
         // Camera nv21格式预览帧的尺寸，默认设置640*480
         protected int PREVIEW_WIDTH = 640;
@@ -239,10 +240,7 @@ public class BaseVideoActivity extends Activity {
             }
 
             if(mFaceDetector == null) {
-                /**
-                 * 离线视频流检测功能需要单独下载支持离线人脸的SDK
-                 * 请开发者前往语音云官网下载对应SDK
-                 */
+
                 // 创建单例失败，与 21001 错误为同样原因，参考 http://bbs.xfyun.cn/forum.php?mod=viewthread&tid=9688
                 showTip( "创建对象失败，请确认 libmsc.so 放置正确，\n 且有调用 createUtility 进行初始化" );
             }
@@ -296,10 +294,7 @@ public class BaseVideoActivity extends Activity {
                         }
 
                         if(mFaceDetector == null) {
-                            /**
-                             * 离线视频流检测功能需要单独下载支持离线人脸的SDK
-                             * 请开发者前往语音云官网下载对应SDK
-                             */
+
                             // 创建单例失败，与 21001 错误为同样原因，参考 http://bbs.xfyun.cn/forum.php?mod=viewthread&tid=9688
                             showTip( "创建对象失败，请确认 libmsc.so 放置正确，\n 且有调用 createUtility 进行初始化" );
                             break;

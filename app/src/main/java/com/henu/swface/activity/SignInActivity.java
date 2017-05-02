@@ -101,7 +101,11 @@ public class SignInActivity extends BaseVideoActivity {
 								//旋转图片
 								// 根据旋转角度，生成旋转矩阵
 								Matrix matrix = new Matrix();
-								matrix.postRotate(270);
+								if(mCameraId == Camera.CameraInfo.CAMERA_FACING_FRONT){
+									matrix.postRotate(270);
+								}else{
+									matrix.postRotate(90);
+								}
 								Bitmap mBitmap1 = Bitmap.createBitmap(bitmap_source, 0, 0, bitmap_source.getWidth(), bitmap_source.getHeight(), matrix, true);
 								testImageView.setImageBitmap(mBitmap1);
 								boolean result = mBitmap1.compress(Bitmap.CompressFormat.JPEG, 100, bos);
@@ -112,7 +116,11 @@ public class SignInActivity extends BaseVideoActivity {
 								//旋转图片
 								// 根据旋转角度，生成旋转矩阵
 								Matrix matrix = new Matrix();
-								matrix.postRotate(270);
+								if(mCameraId == Camera.CameraInfo.CAMERA_FACING_FRONT){
+									matrix.postRotate(270);
+								}else{
+									matrix.postRotate(90);
+								}
 								Bitmap mBitmap1 = Bitmap.createBitmap(bitmap_source, 0, 0, bitmap_source.getWidth(), bitmap_source.getHeight(), matrix, true);
 								testImageView.setImageBitmap(mBitmap1);
 								mBitmap1.compress(Bitmap.CompressFormat.JPEG, 70, bos);
@@ -221,7 +229,7 @@ public class SignInActivity extends BaseVideoActivity {
 						TextView username = (TextView) v.findViewById(R.id.dialog_username);
 						TextView dialog_confidence = (TextView) v.findViewById(R.id.dialog_confidence);
 						username.setText(userHasSigned.getUser_name());
-						dialog_confidence.setText(Float.toString(confidence));
+						dialog_confidence.setText(String.valueOf(confidence));
 						newdialog.setView(v);
 						newdialog.setPositiveButton("完成", new DialogInterface.OnClickListener() {
 							@Override
@@ -242,7 +250,7 @@ public class SignInActivity extends BaseVideoActivity {
 						TextView username = (TextView) v.findViewById(R.id.dialog_username);
 						TextView dialog_confidence = (TextView) v.findViewById(R.id.dialog_confidence);
 						username.setText(userHasSigned.getUser_name());
-						dialog_confidence.setText(Float.toString(confidence));
+						dialog_confidence.setText(String.valueOf(confidence));
 						newdialog.setView(v);
 						newdialog.setPositiveButton("完成", new DialogInterface.OnClickListener() {
 							@Override
@@ -306,8 +314,9 @@ public class SignInActivity extends BaseVideoActivity {
 							mCamera.startPreview();
 						}
 					});
-					dialog.cancel();
-					newdialog.show();
+					dialog.dismiss();
+					dialog = newdialog.show();
+					break;
 				case FinalUtil.SIGN_IN_FAILED_NOUSER:
 					newdialog.setCancelable(false);
 					newdialog.setTitle("温馨提示：");
@@ -322,9 +331,9 @@ public class SignInActivity extends BaseVideoActivity {
 					dialog.cancel();
 					newdialog.show();
 					break;
-				case FinalUtil.ADDUSERSUCCESS:
-
-					break;
+//				case FinalUtil.ADDUSERSUCCESS:
+//
+//					break;
 				default:
 					break;
 			}

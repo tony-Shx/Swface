@@ -243,7 +243,7 @@ public class ManageActivity extends Activity {
 					break;
 				case FinalUtil.SYN_DATA_FAILED:
 					Toast.makeText(getApplicationContext(), "查询出错，请检查网络连接", Toast.LENGTH_LONG).show();
-					//ptrFrame.clearAnimation();
+					ptrFrame.refreshComplete();
 					break;
 				default:
 					break;

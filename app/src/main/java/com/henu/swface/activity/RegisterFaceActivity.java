@@ -109,7 +109,11 @@ public class RegisterFaceActivity extends BaseVideoActivity {
 					//旋转图片
 					// 根据旋转角度，生成旋转矩阵
 					Matrix matrix = new Matrix();
-					matrix.postRotate(270);
+					if(mCameraId == Camera.CameraInfo.CAMERA_FACING_FRONT){
+						matrix.postRotate(270);
+					}else{
+						matrix.postRotate(90);
+					}
 					Bitmap mBitmap1 = Bitmap.createBitmap(bitmap_source, 0, 0, bitmap_source.getWidth(), bitmap_source.getHeight(), matrix, true);
 					testImageView.setImageBitmap(mBitmap1);
 					boolean result = mBitmap1.compress(Bitmap.CompressFormat.JPEG, 100, bos);
@@ -121,7 +125,11 @@ public class RegisterFaceActivity extends BaseVideoActivity {
 					//旋转图片
 					// 根据旋转角度，生成旋转矩阵
 					Matrix matrix = new Matrix();
-					matrix.postRotate(270);
+					if(mCameraId == Camera.CameraInfo.CAMERA_FACING_FRONT){
+						matrix.postRotate(270);
+					}else{
+						matrix.postRotate(90);
+					}
 					Bitmap mBitmap1 = Bitmap.createBitmap(bitmap_source, 0, 0, bitmap_source.getWidth(), bitmap_source.getHeight(), matrix, true);
 					testImageView.setImageBitmap(mBitmap1);
 					mBitmap1.compress(Bitmap.CompressFormat.JPEG, 70, bos);
@@ -245,12 +253,16 @@ public class RegisterFaceActivity extends BaseVideoActivity {
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
+					if(null!=JSON2){
 
 					Log.i(TAG, "faceSetOperate.createFaceSet(): " + JSON2);
 					if (JSON2.contains("\"face_added\": 1")) {
 						Message message = new Message();
 						message.arg1 = FinalUtil.DETECT_SUCCESS;
 						myhandler.sendMessage(message);
+					}else{
+						clearBMOBDate(objectID);
+					}
 					}else{
 						clearBMOBDate(objectID);
 					}

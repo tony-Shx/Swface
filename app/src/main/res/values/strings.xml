@@ -26,11 +26,12 @@
     <string name="cube_ptr_pull_down">再使点劲下拉</string>
     <string name="cube_ptr_pull_down_to_refresh">下拉刷新</string>
     <string name="cube_ptr_release_to_refresh">释放立即刷新</string>
-    <string name="cube_ptr_refreshing">更新列表中...</string>
+    <string name="cube_ptr_refreshing">更新列表中…</string>
     <string name="cube_ptr_refresh_complete">刷新成功</string>
 
     <string name="cube_ptr_last_update">上次更新:&#160;</string>
     <string name="cube_ptr_seconds_ago">&#160;秒之前</string>
     <string name="cube_ptr_minutes_ago">&#160;分钟之前</string>
     <string name="cube_ptr_hours_ago">&#160;小时之前</string>
+    <string name="button_sign_log">查看签到记录</string>
 </resources>

@@ -45,6 +45,12 @@
             android:id="@+id/button_manage"
             android:text="@string/button_manage"
             />
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/button_sign_log"
+            android:text="@string/button_sign_log"
+            />
 
 
 

@@ -55,6 +55,8 @@
         </activity>
         <activity android:name=".activity.ViewPictureActivity">
         </activity>
+        <activity android:name=".activity.SignLogActivity">
+        </activity>
     </application>
 
 </manifest>

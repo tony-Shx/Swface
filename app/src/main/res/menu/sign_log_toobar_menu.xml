@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_only_signed"
+        android:title="@string/menu_only_signed_text"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/action_only_no_signed"
+        android:title="@string/menu_only_no_signed_text"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/action_all_people"
+        android:title="@string/menu_show_all_text"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/action_about"
+        android:icon="@android:drawable/ic_dialog_info"
+        android:title="@string/menu_item_about"
+        app:showAsAction="never"/>
+</menu>

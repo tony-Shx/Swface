@@ -105,6 +105,7 @@ public class BmobDataHelper {
 				if (e == null && !list.isEmpty()) {
 					final UserHasSigned userHasSigned1 = list.get(0);
 					SignLog signLog = new SignLog(context);
+					signLog.setObject_id(userHasSigned1.getObjectId());
 					signLog.setUser_name(userHasSigned1.getUser_name());
 					signLog.setConfidence(faceSignIn.getConfidence());
 					signLog.setTime(System.currentTimeMillis());

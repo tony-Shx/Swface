@@ -2,6 +2,9 @@ package com.henu.swface.VO;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Parcelable;
+
+import java.io.Serializable;
 
 import cn.bmob.v3.BmobObject;
 
@@ -9,8 +12,8 @@ import cn.bmob.v3.BmobObject;
  * Created by 宋浩祥 on 2017/4/4.
  */
 
-public class SignLog extends BmobObject {
-    private String user_name,telephone,faceToken;
+public class SignLog extends BmobObject implements Serializable {
+    private String user_name,telephone,faceToken,object_id;
     private long time;
     private float confidence;
 
@@ -43,6 +46,14 @@ public class SignLog extends BmobObject {
 
     public String getUser_name() {
         return user_name;
+    }
+
+    public String getObject_id() {
+        return object_id;
+    }
+
+    public void setObject_id(String object_id) {
+        this.object_id = object_id;
     }
 
     public void setUser_name(String user_name) {

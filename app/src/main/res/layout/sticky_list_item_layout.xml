@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="10dp"
+    >
+
+    <LinearLayout
+        android:id="@+id/linearLayout_2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        >
+
+
+        <ImageView
+            android:id="@+id/sign_log_item_face"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+
+            android:src="@mipmap/app_icon"
+            />
+
+        <TextView
+            android:id="@+id/sign_log_item_username"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:maxLines="1"
+            android:singleLine="true"
+            android:gravity="left"
+            android:text="姓名姓名"
+            android:textColor="#000000"
+            android:textSize="20sp"
+            />
+
+        <TextView
+            android:id="@+id/sign_log_item_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginRight="10dp"
+            android:text="已签到"
+            android:textColor="#00fc37"
+            android:textSize="20sp"
+            />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/sign_log_item_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignBottom="@+id/linearLayout_2"
+        android:layout_alignParentRight="true"
+        android:text="2017年6月1日17:13:10"
+        android:textColor="#434343"
+        />
+    <TextView
+        android:id="@+id/sign_log_item_confident"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="98.99"
+        android:layout_above="@+id/sign_log_item_time"
+        android:layout_toLeftOf="@+id/sign_log_item_is_successs"
+        android:textColor="#000000"
+        android:textSize="18sp"
+        />
+    <ImageView
+        android:id="@+id/sign_log_item_is_successs"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_above="@+id/sign_log_item_time"
+        android:layout_alignParentTop="true"
+        android:src="@mipmap/sign_success"
+        />
+
+</RelativeLayout>

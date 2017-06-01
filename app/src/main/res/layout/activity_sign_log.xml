@@ -4,12 +4,35 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@mipmap/bacground_2"
+    android:orientation="vertical"
     tools:context="com.henu.swface.activity.SignLogActivity">
-
-    <ListView
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar_sign_log"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/listView_sign_log"/>
+        android:layout_height="wrap_content"
+        android:background="#74828b">
+    </android.support.v7.widget.Toolbar>
+
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/refresh_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <se.emilsjolander.stickylistheaders.StickyListHeadersListView
+            android:id="@+id/list"
+            android:layout_width="match_parent"
+            android:background="#55cfc1c1"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:drawSelectorOnTop="true"
+            android:padding="0dp"
+            android:scrollbarStyle="outsideOverlay"
+            android:fastScrollEnabled="true"
+            android:overScrollMode="never"/>
+
+    </android.support.v4.widget.SwipeRefreshLayout>
+
 
 
 </LinearLayout>

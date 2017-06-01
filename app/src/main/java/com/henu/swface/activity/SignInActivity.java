@@ -167,6 +167,7 @@ public class SignInActivity extends BaseVideoActivity {
 				}
 				if (faceSignIn == null || faceSignIn.getFace_token() == null || faceSignIn.getFace_token().length() < 2) {
 					Message message = new Message();
+
 					message.arg1 = FinalUtil.SIGN_IN_FAILED_FILENOTFIND;
 					myhandler.sendMessage(message);
 				} else {
@@ -175,6 +176,7 @@ public class SignInActivity extends BaseVideoActivity {
 					final Message message = new Message();
 					if (userHasSigned.getUser_name() != null) {
 						SignLog signLog = new SignLog(getApplicationContext());
+						signLog.setObject_id(userHasSigned.getObjectId());
 						signLog.setUser_name(userHasSigned.getUser_name());
 						signLog.setConfidence(faceSignIn.getConfidence());
 						signLog.setTime(System.currentTimeMillis());
@@ -235,6 +237,7 @@ public class SignInActivity extends BaseVideoActivity {
 							@Override
 							public void onClick(DialogInterface dialog, int which) {
 								SignLog signLog = new SignLog(getApplicationContext());
+								signLog.setObject_id(userHasSigned.getObjectId());
 								signLog.setTime(System.currentTimeMillis());
 								signLog.setUser_name(userHasSigned.getUser_name());
 								signLog.setConfidence(confidence);
@@ -257,6 +260,7 @@ public class SignInActivity extends BaseVideoActivity {
 							public void onClick(DialogInterface dialog, int which) {
 								SignLog signLog = new SignLog(getApplicationContext());
 								signLog.setTime(System.currentTimeMillis());
+								signLog.setObject_id(userHasSigned.getObjectId());
 								signLog.setUser_name(userHasSigned.getUser_name());
 								signLog.setConfidence(confidence);
 								DatabaseAdapter db = new DatabaseAdapter(getApplicationContext());

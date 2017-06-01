@@ -42,4 +42,6 @@ public final class FinalUtil {
 	public final static int REMOVE_USER_IO_EXCEPTION = 0X701;
 	public final static int REMOVE_USER_BMOB_EXCEPTION = 0X702;
 
+	public final static int LOAD_SIGN_LOG_SUCCESS = 0X800;
+	public final static int LOAD_SIGN_LOG_IO_EXCEPTION = 0X801;
 }

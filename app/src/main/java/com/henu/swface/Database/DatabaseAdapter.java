@@ -34,7 +34,7 @@ import okhttp3.Response;
 
 public class DatabaseAdapter {
 	private static final String TAG = "DatabaseAdapter";
-	private static final String Sql_findUserByFaceToken = "SELECT user_name FROM UserHasSigned WHERE face_token1 = ? OR face_token2 = ? OR face_token3 = ? OR face_token4 = ? OR face_token5 = ?;";
+	private static final String Sql_findUserByFaceToken = "SELECT * FROM UserHasSigned WHERE face_token1 = ? OR face_token2 = ? OR face_token3 = ? OR face_token4 = ? OR face_token5 = ?;";
 	private Context context;
 	private DatabaseHelper databaseHelper;
 
@@ -377,6 +377,7 @@ public class DatabaseAdapter {
 		final UserHasSigned userHasSigned = new UserHasSigned(context);
 		while (cursor.moveToNext()) {
 			userHasSigned.setUser_name(cursor.getString(cursor.getColumnIndex("user_name")));
+			userHasSigned.setObjectId(cursor.getString(cursor.getColumnIndex("object_id")));
 		}
 		cursor.close();
 		db.close();
@@ -463,6 +464,8 @@ public class DatabaseAdapter {
 	public void addLog_SignLog(SignLog log) {
 		SQLiteDatabase db = databaseHelper.getWritableDatabase();
 		ContentValues values = new ContentValues();
+
+		values.put("object_id", log.getObjectId());
 		values.put("user_name", log.getUser_name());
 		values.put("confidence", log.getConfidence());
 		values.put("time", log.getTime());

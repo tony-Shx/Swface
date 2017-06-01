@@ -28,7 +28,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             "face_url2 TEXT,face_url3 TEXT,face_url4 TEXT,face_url5 TEXT,created_at TEXT,updated_at TEXT)";
     private static final String DROP_TABLE_USER = "DROP TABLE IF EXISTS UserHasSigned";
     private static final String CREATE_TABLE_SIGNLOG = "CREATE TABLE IF NOT EXISTS SignLog(id INTEGER PRIMARY KEY AUTOINCREMENT," +
-            "user_name TEXT,confidence REAL,time NUMERIC)";
+            "object_id TEXT,user_name TEXT,confidence REAL,time NUMERIC)";
     private static final String DROP_TABLE_SIGNLOG = "DROP TABLE IF EXISTS SignLog";
 
     public DatabaseHelper(Context context) {

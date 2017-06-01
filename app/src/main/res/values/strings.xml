@@ -34,4 +34,8 @@
     <string name="cube_ptr_minutes_ago">&#160;分钟之前</string>
     <string name="cube_ptr_hours_ago">&#160;小时之前</string>
     <string name="button_sign_log">查看签到记录</string>
+    <string name="sign_log_list_end_tip">别拉了！我是有底线的！</string>
+    <string name="menu_only_signed_text">仅显示已签到</string>
+    <string name="menu_only_no_signed_text">仅显示未签到</string>
+    <string name="menu_show_all_text">显示所有</string>
 </resources>

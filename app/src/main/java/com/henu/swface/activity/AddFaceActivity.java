@@ -57,10 +57,13 @@ public class AddFaceActivity extends BaseVideoActivity {
 
 	private final static String TAG = AddFaceActivity.class.getSimpleName();
 	private AlertDialog dialog = null;
-	private Button button_take_photos;
-	private ImageView testImageView;
+	private Button button_take_photos,button_select;
+	private ImageView testImageView,imageView_preview;
 	private UserHasSigned userHasSigned;
 	private Face face = null;
+	private static final int PHOTO_REQUEST_GALLERY = 1;
+	private static final int PHOTO_REQUEST_CUT = 2;
+
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -77,6 +80,17 @@ public class AddFaceActivity extends BaseVideoActivity {
 	@SuppressWarnings("deprecation")
 	private void initUI() {
 		testImageView = (ImageView) findViewById(R.id.testImageView);
+		imageView_preview = (ImageView) findViewById(R.id.imageView_preview);
+		button_select = (Button) findViewById(R.id.button_select);
+		button_select.setVisibility(View.VISIBLE);
+		button_select.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent getAlbum = new Intent(Intent.ACTION_GET_CONTENT);
+				getAlbum.setType("image/*");
+				startActivityForResult(getAlbum, PHOTO_REQUEST_GALLERY);
+			}
+		});
 		button_take_photos = (Button) findViewById(R.id.button_take_photos);
 		button_take_photos.setClickable(true);
 		button_take_photos.setOnClickListener(new OnClickListener() {
@@ -151,6 +165,64 @@ public class AddFaceActivity extends BaseVideoActivity {
 			}
 		}
 	};
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		switch (requestCode){
+			case PHOTO_REQUEST_GALLERY:
+				if(data!=null){
+					startPhotoZoom(data.getData());
+				}else{
+					Log.i("onActivityResult: "," ");
+				}
+				break;
+			case PHOTO_REQUEST_CUT:
+				if(data!=null){
+					if(data.getParcelableExtra("data") instanceof Bitmap){
+						Bitmap bitmap = data.getParcelableExtra("data");
+						String pictureStoragePath = PictureUtil.getPictureStoragePath(getApplicationContext());
+						File file = new File(pictureStoragePath,"waitForRename.jpg");
+						try {
+							FileOutputStream fos = new FileOutputStream(file);
+							imageView_preview.setImageBitmap(bitmap);
+							imageView_preview.setVisibility(View.VISIBLE);
+							bitmap.compress(Bitmap.CompressFormat.JPEG,80,fos);
+							fos.flush();
+							fos.close();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+						checkFace(file);
+					}else{
+						Log.i("onActivityResult: ","false");
+					}
+				}
+				break;
+			default:
+				break;
+		}
+
+	}
+
+	private void startPhotoZoom(Uri uri) {
+		Intent intent = new Intent("com.android.camera.action.CROP");
+		intent.setDataAndType(uri, "image/*");
+		// crop为true是设置在开启的intent中设置显示的view可以剪裁
+		intent.putExtra("crop", "true");
+
+		// aspectX aspectY 是宽高的比例
+		intent.putExtra("aspectX", 3);
+		intent.putExtra("aspectY", 4);
+
+		// outputX,outputY 是剪裁图片的宽高
+		intent.putExtra("outputX", 300);
+		intent.putExtra("outputY", 400);
+		intent.putExtra("return-data", true);
+		intent.putExtra("noFaceDetection", true);
+
+		startActivityForResult(intent, PHOTO_REQUEST_CUT);
+	}
 
 	private void addFace() {
 

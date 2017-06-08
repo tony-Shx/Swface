@@ -27,9 +27,7 @@ public class RoundTransform implements Transformation {
 
 		Bitmap squaredBitmap = Bitmap
 				.createBitmap(source, x, y, size, size);
-		if (squaredBitmap != source) {
-			source.recycle();
-		}
+
 
 		Bitmap bitmap = Bitmap.createBitmap(size, size, squaredBitmap.getConfig());
 
@@ -42,6 +40,10 @@ public class RoundTransform implements Transformation {
 
 		float r = size / 2f;
 		canvas.drawCircle(r, r, r, paint);
+		if (squaredBitmap != source) {
+			source.recycle();
+		}
+		squaredBitmap.recycle();
 		return bitmap;
 	}
 

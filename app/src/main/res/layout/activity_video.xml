@@ -2,7 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
-    
+
 	<SurfaceView 
 	    android:id="@+id/sfv_preview"
 	    android:layout_width="match_parent"
@@ -45,6 +45,15 @@
 			android:layout_weight="1"
             android:text="聚焦"
             />
+
+		<Button
+			android:id="@+id/button_select"
+			android:visibility="gone"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_weight="1"
+			android:text="从相册选择"/>
+
 		<Button
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
@@ -53,5 +62,11 @@
 			android:id="@+id/button_take_photos"
 			/>
 	</RadioGroup>
-	
+	<ImageView
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:id="@+id/imageView_preview"
+		android:visibility="gone"
+		android:scaleType="fitStart"
+		/>
 </RelativeLayout>

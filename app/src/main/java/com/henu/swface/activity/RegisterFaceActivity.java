@@ -6,12 +6,14 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -34,6 +36,7 @@ import com.henu.swface.Utils.JSONUtil;
 import com.henu.swface.Utils.PictureUtil;
 import com.henu.swface.VO.Face;
 import com.henu.swface.VO.UserHasSigned;
+import com.squareup.picasso.Picasso;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -57,8 +60,10 @@ public class RegisterFaceActivity extends BaseVideoActivity {
 	private static int fileUploadProgress = 0;
 	private final static String TAG = RegisterFaceActivity.class.getSimpleName();
 	private AlertDialog dialog = null;
-	private Button button_take_photos;
-	private ImageView testImageView;
+	private Button button_take_photos,button_select;
+	private ImageView testImageView,imageView_preview;
+	private static final int PHOTO_REQUEST_GALLERY = 1;
+	private static final int PHOTO_REQUEST_CUT = 2;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +77,17 @@ public class RegisterFaceActivity extends BaseVideoActivity {
 	@SuppressWarnings("deprecation")
 	private void initUI() {
 		testImageView = (ImageView) findViewById(R.id.testImageView);
+		imageView_preview = (ImageView) findViewById(R.id.imageView_preview);
+		button_select = (Button) findViewById(R.id.button_select);
+		button_select.setVisibility(View.VISIBLE);
+		button_select.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent getAlbum = new Intent(Intent.ACTION_GET_CONTENT);
+				getAlbum.setType("image/*");
+				startActivityForResult(getAlbum, PHOTO_REQUEST_GALLERY);
+			}
+		});
 		button_take_photos = (Button) findViewById(R.id.button_take_photos);
 		button_take_photos.setClickable(true);
 		button_take_photos.setOnClickListener(new OnClickListener() {
@@ -153,34 +169,94 @@ public class RegisterFaceActivity extends BaseVideoActivity {
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		String username = null;
-		String pictureStoragePath = PictureUtil.getPictureStoragePath(getApplicationContext());
-		if (data != null) {
-			username = data.getStringExtra("username");
-		}
-		if (resultCode == 1) {
-			File file = new File(pictureStoragePath, "waitForRename.jpg");
-			if (file.exists()) {
-				showNormalDialog(null, "正在注册新人脸，请保持网络通畅...", false, new ProgressBar(this), false);
-				RegisterFace(file, username);
-			} else {
-				Toast.makeText(this, "错误代码-1，拍照文件保存失败，请检查磁盘空间！", Toast.LENGTH_LONG).show();
-			}
-			//mCamera.startPreview();//保存之后返回预览界面
-		} else {
-			File file = new File(pictureStoragePath + "/waitForRename.jpg");
-			if (file.exists()) {
-				if (file.delete()) {
-					Toast.makeText(this, "已取消保存人脸", Toast.LENGTH_LONG).show();
-					initUI();
-					mCameraId = CameraInfo.CAMERA_FACING_FRONT;
-					openCamera();
-					mCamera.startPreview();
-				} else {
-					Toast.makeText(this, "请检查磁盘空间，人脸删除失败", Toast.LENGTH_LONG).show();
+		switch (requestCode){
+			case PHOTO_REQUEST_GALLERY:
+				if(data!=null){
+					startPhotoZoom(data.getData());
+				}else{
+					Log.i("onActivityResult: "," ");
 				}
-			}
+				break;
+			case PHOTO_REQUEST_CUT:
+				if(data!=null){
+					if(data.getParcelableExtra("data") instanceof Bitmap){
+						Bitmap bitmap = data.getParcelableExtra("data");
+						String pictureStoragePath = PictureUtil.getPictureStoragePath(getApplicationContext());
+						File file = new File(pictureStoragePath,"waitForRename.jpg");
+						try {
+							FileOutputStream fos = new FileOutputStream(file);
+							imageView_preview.setImageBitmap(bitmap);
+							imageView_preview.setVisibility(View.VISIBLE);
+							bitmap.compress(Bitmap.CompressFormat.JPEG,80,fos);
+							fos.flush();
+							fos.close();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+						Log.i(TAG, "onPictureTaken: 图片保存成功");
+						Intent intent = new Intent(getApplicationContext(), DialogInputNameActivity.class);
+						startActivityForResult(intent, 0);
+					}else{
+						Log.i("onActivityResult: ","false");
+					}
+				}
+				break;
+			case 0:
+				String username = null;
+				String pictureStoragePath = PictureUtil.getPictureStoragePath(getApplicationContext());
+				if (data != null) {
+					username = data.getStringExtra("username");
+				}
+				if (resultCode == 1) {
+					File file = new File(pictureStoragePath, "waitForRename.jpg");
+					if (file.exists()) {
+						showNormalDialog(null, "正在注册新人脸，请保持网络通畅...", false, new ProgressBar(this), false);
+						RegisterFace(file, username);
+					} else {
+						imageView_preview.setVisibility(View.GONE);
+						Toast.makeText(this, "错误代码-1，拍照文件保存失败，请检查磁盘空间！", Toast.LENGTH_LONG).show();
+					}
+					//mCamera.startPreview();//保存之后返回预览界面
+				} else {
+					File file = new File(pictureStoragePath + "/waitForRename.jpg");
+					if (file.exists()) {
+						if (file.delete()) {
+							Toast.makeText(this, "已取消保存人脸", Toast.LENGTH_LONG).show();
+							initUI();
+							mCameraId = CameraInfo.CAMERA_FACING_FRONT;
+							openCamera();
+							mCamera.startPreview();
+						} else {
+
+							Toast.makeText(this, "请检查磁盘空间，人脸删除失败", Toast.LENGTH_LONG).show();
+						}
+					}
+					imageView_preview.setVisibility(View.GONE);
+				}
+				break;
+			default:
+				break;
 		}
+
+	}
+
+	private void startPhotoZoom(Uri uri) {
+		Intent intent = new Intent("com.android.camera.action.CROP");
+		intent.setDataAndType(uri, "image/*");
+		// crop为true是设置在开启的intent中设置显示的view可以剪裁
+		intent.putExtra("crop", "true");
+
+		// aspectX aspectY 是宽高的比例
+		intent.putExtra("aspectX", 3);
+		intent.putExtra("aspectY", 4);
+
+		// outputX,outputY 是剪裁图片的宽高
+		intent.putExtra("outputX", 300);
+		intent.putExtra("outputY", 400);
+		intent.putExtra("return-data", true);
+		intent.putExtra("noFaceDetection", true);
+
+		startActivityForResult(intent, PHOTO_REQUEST_CUT);
 	}
 
 	private Handler myhandler = new Handler() {
@@ -312,6 +388,7 @@ public class RegisterFaceActivity extends BaseVideoActivity {
 					File newFile = new File(PictureUtil.getPictureStoragePath(getApplicationContext()), face.getFace_token() + ".jpg");
 					if (!imageFile.renameTo(newFile)) {
 						showNormalDialog(null, "文件重命名失败，请检查磁盘空间是否充足？", false, null, true);
+						imageView_preview.setVisibility(View.GONE);
 						return;
 					}
 					face.setImage_path(newFile.getAbsolutePath());

@@ -45,7 +45,7 @@ import com.iflytek.cloud.util.Accelerometer;
 
 public class BaseVideoActivity extends Activity {
         private final static String TAG = BaseVideoActivity.class.getSimpleName();
-        private SurfaceView mPreviewSurface;
+        protected SurfaceView mPreviewSurface;
         private SurfaceView mFaceSurface;
         protected Camera mCamera;
 
